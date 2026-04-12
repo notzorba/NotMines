@@ -1,0 +1,45 @@
+prefix: "<gradient:#FFB347:#FF5F6D><bold>NotMines</bold></gradient> <dark_gray>»</dark_gray>"
+
+general:
+  players-only: "<prefix> <red>Only players can use that command.</red>"
+  no-permission: "<prefix> <red>You do not have permission to do that.</red>"
+  economy-missing: "<prefix> <red>Vault or a hooked economy provider was not found, so NotMines cannot start.</red>"
+  game-opening: "<prefix> <gray>Opening your board with <white><bet></white> and <white><mines></white> mine(s)...</gray>"
+  active-game-reminder: "<prefix> <yellow>You already have an active board. Use <white>/mines reopen</white> or <white>/mines cashout</white>.</yellow>"
+  board-closed: "<prefix> <gray>Your board is still active. Use <white>/mines reopen</white> or <white>/mines cashout</white>.</gray>"
+  stats-loading: "<prefix> <gray>Loading mines stats...</gray>"
+
+command:
+  help:
+    - "<prefix> <white>/mines <bet> <mines></white> <gray>- Start a new board.</gray>"
+    - "<prefix> <white>/mines cashout</white> <gray>- Take the current payout.</gray>"
+    - "<prefix> <white>/mines reopen</white> <gray>- Reopen your active board.</gray>"
+    - "<prefix> <white>/mines stats [player]</white> <gray>- View mines statistics.</gray>"
+  invalid-number: "<prefix> <red><value></red> <gray>is not a valid number.</gray>"
+  invalid-bet: "<prefix> <red>The bet must be between <min> and <max>.</red>"
+  invalid-mines: "<prefix> <red>The mine count must be between <min> and <max>.</red>"
+  cashout-empty: "<prefix> <red>You do not have an active board to cash out.</red>"
+  reopen-empty: "<prefix> <red>You do not have an active board to reopen.</red>"
+  already-started: "<prefix> <red>Finish or cash out your current board before starting another one.</red>"
+
+economy:
+  insufficient-funds: "<prefix> <red>You need <required> to start that board.</red>"
+  withdraw-failed: "<prefix> <red>Your bet could not be withdrawn right now. Try again in a moment.</red>"
+  deposit-failed: "<prefix> <red>Your payout could not be completed automatically. Please contact staff.</red>"
+
+game:
+  hit-safe: "<prefix> <green>Safe tile!</green> <gray>Multiplier:</gray> <white><multiplier>x</white> <gray>Payout:</gray> <white><payout></white>"
+  hit-mine: "<prefix> <red>You hit a mine and lost <bet>.</red>"
+  cashed-out: "<prefix> <green>You cashed out for <payout></green> <gray>(<multiplier>x).</gray>"
+  board-cleared: "<prefix> <gold>You cleared the full board for <payout></gold> <gray>(<multiplier>x).</gray>"
+  forced-cashout: "<prefix> <yellow>Your active board was closed safely and paid out <payout>.</yellow>"
+
+stats:
+  header: "<prefix> <gradient:#7F7FD5:#86A8E7:#91EAE4><bold>Mines Stats</bold></gradient> <gray>for</gray> <white><player></white>"
+  body:
+    - "<gray>Games:</gray> <white><games></white> <dark_gray>|</dark_gray> <gray>Wins:</gray> <white><wins></white> <dark_gray>|</dark_gray> <gray>Losses:</gray> <white><losses></white>"
+    - "<gray>Win Rate:</gray> <white><win_rate>%</white> <dark_gray>|</dark_gray> <gray>Tiles Cleared:</gray> <white><tiles></white>"
+    - "<gray>Total Wagered:</gray> <white><wagered></white>"
+    - "<gray>Total Paid Out:</gray> <white><paid_out></white>"
+    - "<gray>Net Profit:</gray> <white><profit></white> <dark_gray>|</dark_gray> <gray>Best Cashout:</gray> <white><best_cashout></white>"
+  missing: "<prefix> <red>No mines stats were found for <player>.</red>"
