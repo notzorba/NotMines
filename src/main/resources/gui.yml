@@ -1,0 +1,176 @@
+title: "<gradient:#FFB347:#FF5F6D><bold>NotMines Mines</bold></gradient>"
+
+layout:
+  inventory-size: 54
+  board-slots:
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    - 11
+    - 12
+    - 13
+    - 14
+    - 15
+    - 20
+    - 21
+    - 22
+    - 23
+    - 24
+    - 29
+    - 30
+    - 31
+    - 32
+    - 33
+    - 38
+    - 39
+    - 40
+    - 41
+    - 42
+  info-slot: 45
+  stats-slot: 46
+  bet-slot: 47
+  cashout-slot: 49
+  odds-slot: 51
+  help-slot: 53
+
+items:
+  filler:
+    material: DARK_GRAY_STAINED_GLASS_PANE
+    title: "<dark_gray> </dark_gray>"
+    lore: []
+
+  hidden-tile:
+    material: GRAY_STAINED_GLASS_PANE
+    title: "<gradient:#89F7FE:#66A6FF><bold>Hidden Tile</bold></gradient>"
+    lore:
+      - "<gray>Click to reveal this tile.</gray>"
+      - "<gray>Mines on board:</gray> <white><mines></white>"
+      - "<gray>Safe chance:</gray> <white><chance>%</white>"
+
+  safe-tile:
+    material: DIAMOND
+    title: "<gradient:#4FACFE:#00F2FE><bold>Safe Diamond</bold></gradient>"
+    lore:
+      - "<gray>This tile was safe.</gray>"
+      - "<gray>Safe picks:</gray> <white><picks></white>"
+      - "<gray>Current payout:</gray> <white><payout></white>"
+
+  unrevealed-safe-tile:
+    material: LIGHT_GRAY_STAINED_GLASS_PANE
+    title: "<gray><bold>Safe Tile</bold></gray>"
+    lore:
+      - "<gray>This was safe, but unrevealed.</gray>"
+
+  cashed-out-tile:
+    material: YELLOW_STAINED_GLASS_PANE
+    title: "<gold><bold>Locked In</bold></gold>"
+    lore:
+      - "<gray>You already secured the payout.</gray>"
+
+  mine-tile:
+    material: TNT
+    title: "<#FF416C><bold>Mine</bold></#FF416C>"
+    lore:
+      - "<red>This tile contained a mine.</red>"
+
+  cashout-active:
+    material: EMERALD
+    title: "<gradient:#56CCF2:#2F80ED><bold>Cash Out</bold></gradient>"
+    lore:
+      - "<gray>Current multiplier:</gray> <white><multiplier>x</white>"
+      - "<gray>Current payout:</gray> <white><payout></white>"
+      - "<gray>Click to secure this amount.</gray>"
+      - "<dark_gray>Predetermined board. No tiles are rolled live.</dark_gray>"
+
+  cashout-disabled:
+    material: BARRIER
+    title: "<red><bold>Round Ended</bold></red>"
+    lore:
+      - "<gray>This round has already ended.</gray>"
+
+  cashout-collected:
+    material: EMERALD
+    title: "<green><bold>Collected</bold></green>"
+    lore:
+      - "<gray>Payout:</gray> <white><payout></white>"
+
+  board-info-active:
+    material: COMPASS
+    title: "<#7EE8FA><bold>Board Status</bold></#7EE8FA>"
+    lore:
+      - "<gray>Safe picks:</gray> <white><safe_picks></white>"
+      - "<gray>Remaining safe tiles:</gray> <white><remaining_safe></white>"
+      - "<gray>Mines:</gray> <white><mines></white>"
+
+  board-info-loss:
+    material: COMPASS
+    title: "<red><bold>Mine Hit</bold></red>"
+    lore:
+      - "<gray>Your board exploded before you could cash out.</gray>"
+      - "<gray>Safe picks:</gray> <white><safe_picks></white>"
+
+  board-info-cashout:
+    material: COMPASS
+    title: "<green><bold>Paid Out</bold></green>"
+    lore:
+      - "<gray>Safe picks:</gray> <white><safe_picks></white>"
+      - "<gray>Final multiplier:</gray> <white><multiplier>x</white>"
+
+  bet-info:
+    material: GOLD_INGOT
+    title: "<#FBD786><bold>Bet Info</bold></#FBD786>"
+    lore:
+      - "<gray>Wager:</gray> <white><wager></white>"
+      - "<gray>Board size:</gray> <white><board_size> tiles</white>"
+      - "<gray>Player:</gray> <white><player></white>"
+
+  odds-info-active:
+    material: CLOCK
+    title: "<#C790F2><bold>Odds</bold></#C790F2>"
+    lore:
+      - "<gray>Current multiplier:</gray> <white><multiplier>x</white>"
+      - "<gray>Next safe chance:</gray> <white><chance>%</white>"
+      - "<gray>Cash out anytime to lock in profit.</gray>"
+
+  odds-info-loss:
+    material: PAPER
+    title: "<gray><bold>Payout</bold></gray>"
+    lore:
+      - "<gray>This round paid:</gray> <white>0</white>"
+
+  odds-info-cashout:
+    material: PAPER
+    title: "<gray><bold>House Edge</bold></gray>"
+    lore:
+      - "<gray>Calculated server-side from safe-pick odds.</gray>"
+
+  help:
+    material: BOOK
+    title: "<#F6D365><bold>Quick Help</bold></#F6D365>"
+    lore:
+      - "<gray>/mines cashout</gray> <white>to claim your current payout</white>"
+      - "<gray>/mines reopen</gray> <white>to reopen this board</white>"
+      - "<gray>Closing the menu does not forfeit the board.</gray>"
+
+  stats-loading:
+    material: NETHER_STAR
+    title: "<gradient:#F9D423:#FF4E50><bold>Your Stats</bold></gradient>"
+    lore:
+      - "<gray>Loading your profile snapshot...</gray>"
+      - "<dark_gray>This button is informational only.</dark_gray>"
+
+  stats-loaded:
+    material: NETHER_STAR
+    title: "<gradient:#F9D423:#FF4E50><bold>Your Stats</bold></gradient>"
+    lore:
+      - "<gray>Games:</gray> <white><games></white> <dark_gray>|</dark_gray> <gray>Wins:</gray> <white><wins></white>"
+      - "<gray>Losses:</gray> <white><losses></white> <dark_gray>|</dark_gray> <gray>Win Rate:</gray> <white><win_rate>%</white>"
+      - "<gray>Total Wagered:</gray> <white><wagered></white>"
+      - "<gray>Total Paid:</gray> <white><paid></white>"
+      - "<gray>Net Profit:</gray> <white><profit></white>"
+      - "<gray>Best Cashout:</gray> <white><best_cashout></white>"
+      - "<gray>Biggest Bet:</gray> <white><biggest_bet></white>"
+      - "<gray>Tiles Cleared:</gray> <white><tiles></white>"
+      - "<dark_gray>This button is informational only.</dark_gray>"

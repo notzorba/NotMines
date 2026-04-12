@@ -7,13 +7,11 @@ import io.github.notzorba.notmines.stats.PlayerStatsSnapshot;
 import io.github.notzorba.notmines.util.ItemFactory;
 import io.github.notzorba.notmines.util.MessageService;
 import io.github.notzorba.notmines.util.Money;
-import java.util.ArrayList;
 import java.util.List;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
@@ -282,7 +280,7 @@ public final class MinesMenu {
         final long payoutMinor,
         final EconomyBridge economy
     ) {
-        return item(messages, guiConfig.cashoutDisabled(), placeholder("payout", economy.format(payoutMinor)));
+        return item(messages, guiConfig.cashoutCollected(), placeholder("payout", economy.format(payoutMinor)));
     }
 
     private static org.bukkit.inventory.ItemStack helpInfo(final MessageService messages, final GuiConfig guiConfig) {

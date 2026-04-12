@@ -28,7 +28,13 @@ public final class NotMinesPlugin extends JavaPlugin {
         this.ensureResource("gui.yml");
 
         this.messages = MessageService.create(this);
-        this.guiConfig = GuiConfig.load(new File(this.getDataFolder(), "gui.yml"));
+        try {
+            this.guiConfig = GuiConfig.load(new File(this.getDataFolder(), "gui.yml"));
+        } catch (final IllegalArgumentException exception) {
+            this.getLogger().severe("Failed to load gui.yml: " + exception.getMessage());
+            this.getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
         this.economyBridge = new EconomyBridge(this);
         if (!this.economyBridge.refresh()) {
             this.getLogger().severe("Vault or a compatible economy provider was not found.");
