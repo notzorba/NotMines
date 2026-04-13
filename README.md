@@ -5,7 +5,7 @@
 Simple, server-side Mines for Paper with Vault economy support.
 
 [![GitHub](https://img.shields.io/badge/GitHub-NotMines-181717?style=for-the-badge&logo=github)](https://github.com/notzorba/NotMines)
-[![Paper](https://img.shields.io/badge/Paper-1.20.6-white?style=for-the-badge&logo=papermc&logoColor=black)](https://papermc.io/)
+[![Paper API](https://img.shields.io/badge/Paper%20API-1.20.6-white?style=for-the-badge&logo=papermc&logoColor=black)](https://papermc.io/)
 [![Java](https://img.shields.io/badge/Java-21-orange?style=for-the-badge&logo=openjdk&logoColor=white)](https://adoptium.net/)
 [![Vault](https://img.shields.io/badge/Vault-Required-4caf50?style=for-the-badge)](https://www.spigotmc.org/resources/vault.34315/)
 [![License](https://img.shields.io/github/license/notzorba/NotMines?style=for-the-badge)](https://github.com/notzorba/NotMines/blob/main/LICENSE)
@@ -19,6 +19,8 @@ This is a Paper plugin for a clean, casino-style Mines game.
 The goal with this project is pretty simple: make Mines feel good in game. The board is handled server-side, payouts are based on real odds with a configurable house edge, bets can use formats like `1k` or `1.5m`, and admins can tweak limits without restarting the server.
 
 It is meant to be easy to drop into a server, easy to configure, and not annoying to maintain.
+
+It is built against the Paper `1.20.6` API for broad compatibility, and is intended to run on current stable Paper releases as well.
 
 ## What It Does
 
@@ -35,15 +37,13 @@ It is meant to be easy to drop into a server, easy to configure, and not annoyin
 
 ## Commands
 
-| Command | Description |
-| --- | --- |
-| `/mines <bet> <mines>` | Start a new board |
-| `/mines cashout` | Cash out your current board |
-| `/mines reopen` | Reopen your current board |
-| `/mines stats [player]` | View your stats or someone else's with permission |
-| `/mines limits` | View current live limits |
-| `/mines limits <min-bet|max-bet|min-mines|max-mines> <value>` | Change limits in game |
-| `/mines reload` | Reload config, GUI, and messages |
+- `/mines <bet> <mines>` starts a new board
+- `/mines cashout` cashes out your current board
+- `/mines reopen` reopens your current board
+- `/mines stats [player]` shows your stats, or another player's with permission
+- `/mines limits` shows the current live limits
+- `/mines limits <min-bet|max-bet|min-mines|max-mines> <value>` changes limits in game
+- `/mines reload` reloads config, GUI, and messages
 
 Alias: `/minegame`
 
@@ -64,12 +64,14 @@ Examples:
 
 ## Setup
 
-You need:
+You will need:
 
 - Java 21
-- Paper 1.20.6
+- Paper
 - [Vault](https://www.spigotmc.org/resources/vault.34315/)
 - Any Vault-compatible economy plugin
+
+This repo is currently built against the Paper `1.20.6` API, so that is the baseline target to test against first rather than a claim that only one exact version works. In practice, the goal is compatibility with modern stable Paper versions, not just `1.20.6`.
 
 Drop the jar into `plugins/`, start the server once, and the plugin will generate its files.
 
