@@ -1,12 +1,16 @@
 limits:
   min-bet: "100"
-  max-bet: "1000000"
+  max-bet: "1m"
   min-mines: 1
   max-mines: 24
 
 gameplay:
   house-edge: 0.03
   end-screen-close-delay-ticks: 50
+
+announcements:
+  enabled: true
+  min-multiplier: 5.0
 
 stats:
   save-interval-seconds: 15

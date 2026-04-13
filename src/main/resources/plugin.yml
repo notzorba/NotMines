@@ -12,7 +12,7 @@ load: POSTWORLD
 commands:
   mines:
     description: Start or manage a mines game.
-    usage: /mines <bet> <amount of mines>
+    usage: /mines <bet> <mines> or /mines <subcommand>
     aliases: [minegame]
     permission: notmines.use
 
@@ -22,4 +22,7 @@ permissions:
     default: true
   notmines.stats.others:
     description: Allows viewing mines stats for other players.
+    default: op
+  notmines.admin:
+    description: Allows viewing and updating NotMines limits in game.
     default: op

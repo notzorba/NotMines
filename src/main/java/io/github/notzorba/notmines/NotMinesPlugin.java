@@ -20,6 +20,7 @@ public final class NotMinesPlugin extends JavaPlugin {
     private StatsService statsService;
     private GameManager gameManager;
     private GuiConfig guiConfig;
+    private MinesCommand minesCommand;
 
     @Override
     public void onEnable() {
@@ -27,11 +28,11 @@ public final class NotMinesPlugin extends JavaPlugin {
         this.ensureResource("messages.yml");
         this.ensureResource("gui.yml");
 
-        this.messages = MessageService.create(this);
         try {
-            this.guiConfig = GuiConfig.load(new File(this.getDataFolder(), "gui.yml"));
+            this.messages = this.loadMessages();
+            this.guiConfig = this.loadGuiConfig();
         } catch (final IllegalArgumentException exception) {
-            this.getLogger().severe("Failed to load gui.yml: " + exception.getMessage());
+            this.getLogger().severe("Failed to load NotMines resources: " + exception.getMessage());
             this.getServer().getPluginManager().disablePlugin(this);
             return;
         }
@@ -42,7 +43,7 @@ public final class NotMinesPlugin extends JavaPlugin {
             return;
         }
 
-        this.settings = PluginSettings.load(this.getConfig(), this.economyBridge.currencyScale());
+        this.reloadSettings();
         this.statsService = new StatsService(this, this.settings);
         this.gameManager = new GameManager(this, this.settings, this.messages, this.guiConfig, this.economyBridge, this.statsService);
 
@@ -88,15 +89,25 @@ public final class NotMinesPlugin extends JavaPlugin {
         return this.gameManager;
     }
 
+    public void reloadSettings() {
+        this.settings = this.loadSettings();
+    }
+
+    public void updateLimit(final String path, final Object value) {
+        this.getConfig().set(path, value);
+        this.saveConfig();
+        this.reloadSettings();
+    }
+
     private void registerCommand() {
         final PluginCommand minesCommand = Objects.requireNonNull(
             this.getCommand("mines"),
             "The /mines command is missing from plugin.yml."
         );
 
-        final MinesCommand executor = new MinesCommand(this, this.gameManager, this.statsService, this.messages);
-        minesCommand.setExecutor(executor);
-        minesCommand.setTabCompleter(executor);
+        this.minesCommand = new MinesCommand(this, this.gameManager, this.statsService, this.messages);
+        minesCommand.setExecutor(this.minesCommand);
+        minesCommand.setTabCompleter(this.minesCommand);
     }
 
     private void ensureResource(final String resourcePath) {
@@ -104,5 +115,37 @@ public final class NotMinesPlugin extends JavaPlugin {
         if (!file.exists()) {
             this.saveResource(resourcePath, false);
         }
+    }
+
+    public void reloadRuntimeResources() {
+        this.reloadConfig();
+
+        final MessageService reloadedMessages = this.loadMessages();
+        final GuiConfig reloadedGuiConfig = this.loadGuiConfig();
+        final PluginSettings reloadedSettings = this.loadSettings();
+
+        this.messages = reloadedMessages;
+        this.guiConfig = reloadedGuiConfig;
+        this.settings = reloadedSettings;
+
+        if (this.gameManager != null) {
+            this.gameManager.reloadRuntimeResources(this.messages, this.guiConfig, this.settings);
+        }
+
+        if (this.minesCommand != null) {
+            this.minesCommand.reloadRuntimeResources(this.messages);
+        }
+    }
+
+    private MessageService loadMessages() {
+        return MessageService.create(this);
+    }
+
+    private GuiConfig loadGuiConfig() {
+        return GuiConfig.load(new File(this.getDataFolder(), "gui.yml"));
+    }
+
+    private PluginSettings loadSettings() {
+        return PluginSettings.load(this.getConfig(), this.economyBridge.currencyScale());
     }
 }

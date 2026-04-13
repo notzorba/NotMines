@@ -19,7 +19,9 @@ public final class MessageService {
     private MessageService(final YamlConfiguration messagesConfig) {
         this.miniMessage = MiniMessage.miniMessage();
         this.messagesConfig = messagesConfig;
-        this.prefix = this.miniMessage.deserialize(messagesConfig.getString("prefix", "<gold>NotMines</gold>"));
+        this.prefix = this.miniMessage.deserialize(
+            messagesConfig.getString("prefix", "<#F97352><bold>Mines</bold></#F97352> <dark_gray>▶</dark_gray>")
+        );
     }
 
     public static MessageService create(final JavaPlugin plugin) {

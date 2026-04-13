@@ -50,27 +50,27 @@ public record GuiConfig(
         validateLayout(layout);
 
         return new GuiConfig(
-            config.getString("title", "<gradient:#FFB347:#FF5F6D><bold>NotMines Mines</bold></gradient>"),
+            config.getString("title", "<dark_gray>Mines | GUI</dark_gray>"),
             layout,
-            loadItem(config, "items.filler", Material.DARK_GRAY_STAINED_GLASS_PANE, "<dark_gray> </dark_gray>"),
-            loadItem(config, "items.hidden-tile", Material.GRAY_STAINED_GLASS_PANE, "<gray><bold>Hidden Tile</bold></gray>"),
-            loadItem(config, "items.safe-tile", Material.DIAMOND, "<aqua><bold>Safe Diamond</bold></aqua>"),
-            loadItem(config, "items.unrevealed-safe-tile", Material.LIGHT_GRAY_STAINED_GLASS_PANE, "<gray><bold>Safe Tile</bold></gray>"),
-            loadItem(config, "items.cashed-out-tile", Material.YELLOW_STAINED_GLASS_PANE, "<gold><bold>Locked In</bold></gold>"),
-            loadItem(config, "items.mine-tile", Material.TNT, "<red><bold>Mine</bold></red>"),
-            loadItem(config, "items.cashout-active", Material.EMERALD, "<green><bold>Cash Out</bold></green>"),
-            loadItem(config, "items.cashout-disabled", Material.BARRIER, "<red><bold>Round Ended</bold></red>"),
-            loadItem(config, "items.cashout-collected", Material.EMERALD, "<green><bold>Collected</bold></green>"),
-            loadItem(config, "items.board-info-active", Material.COMPASS, "<aqua><bold>Board Status</bold></aqua>"),
-            loadItem(config, "items.board-info-loss", Material.COMPASS, "<red><bold>Mine Hit</bold></red>"),
-            loadItem(config, "items.board-info-cashout", Material.COMPASS, "<green><bold>Paid Out</bold></green>"),
-            loadItem(config, "items.bet-info", Material.GOLD_INGOT, "<gold><bold>Bet Info</bold></gold>"),
-            loadItem(config, "items.odds-info-active", Material.CLOCK, "<light_purple><bold>Odds</bold></light_purple>"),
-            loadItem(config, "items.odds-info-loss", Material.PAPER, "<gray><bold>Payout</bold></gray>"),
-            loadItem(config, "items.odds-info-cashout", Material.PAPER, "<gray><bold>House Edge</bold></gray>"),
-            loadItem(config, "items.help", Material.BOOK, "<yellow><bold>Quick Help</bold></yellow>"),
-            loadItem(config, "items.stats-loading", Material.NETHER_STAR, "<gold><bold>Your Stats</bold></gold>"),
-            loadItem(config, "items.stats-loaded", Material.NETHER_STAR, "<gold><bold>Your Stats</bold></gold>")
+            loadItem(config, "items.filler", Material.BLACK_STAINED_GLASS_PANE, "<dark_gray> </dark_gray>"),
+            loadItem(config, "items.hidden-tile", Material.GRAY_STAINED_GLASS_PANE, "<#8F9FB3>Hidden Tile</#8F9FB3>"),
+            loadItem(config, "items.safe-tile", Material.DIAMOND, "<#53B38C>Safe</#53B38C>"),
+            loadItem(config, "items.unrevealed-safe-tile", Material.LIGHT_GRAY_STAINED_GLASS_PANE, "<#A5AFBC>Safe Tile</#A5AFBC>"),
+            loadItem(config, "items.cashed-out-tile", Material.YELLOW_STAINED_GLASS_PANE, "<#D5B25C>Locked In</#D5B25C>"),
+            loadItem(config, "items.mine-tile", Material.TNT, "<#D96B6B>Mine</#D96B6B>"),
+            loadItem(config, "items.cashout-active", Material.EMERALD, "<#53B38C>Cash Out</#53B38C>"),
+            loadItem(config, "items.cashout-disabled", Material.BARRIER, "<#C97A7A>Round Ended</#C97A7A>"),
+            loadItem(config, "items.cashout-collected", Material.EMERALD, "<#53B38C>Collected</#53B38C>"),
+            loadItem(config, "items.board-info-active", Material.COMPASS, "<#7C92B8>Board Status</#7C92B8>"),
+            loadItem(config, "items.board-info-loss", Material.COMPASS, "<#D96B6B>Mine Hit</#D96B6B>"),
+            loadItem(config, "items.board-info-cashout", Material.COMPASS, "<#53B38C>Paid Out</#53B38C>"),
+            loadItem(config, "items.bet-info", Material.GOLD_INGOT, "<#D5B25C>Bet Info</#D5B25C>"),
+            loadItem(config, "items.odds-info-active", Material.CLOCK, "<#8E88D6>Odds</#8E88D6>"),
+            loadItem(config, "items.odds-info-loss", Material.PAPER, "<#A5AFBC>Payout</#A5AFBC>"),
+            loadItem(config, "items.odds-info-cashout", Material.PAPER, "<#A5AFBC>House Edge</#A5AFBC>"),
+            loadItem(config, "items.help", Material.BOOK, "<#C7A768>Quick Help</#C7A768>"),
+            loadItem(config, "items.stats-loading", Material.NETHER_STAR, "<#7588A6>Your Stats</#7588A6>"),
+            loadItem(config, "items.stats-loaded", Material.NETHER_STAR, "<#7588A6>Your Stats</#7588A6>")
         );
     }
 

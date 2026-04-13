@@ -9,6 +9,8 @@ public record PluginSettings(
     int minMines,
     int maxMines,
     double houseEdge,
+    boolean announcementEnabled,
+    double announcementMinMultiplier,
     int saveIntervalSeconds,
     long shutdownWaitMillis,
     int endScreenCloseDelayTicks
@@ -19,6 +21,8 @@ public record PluginSettings(
         final int minMines = Math.max(1, config.getInt("limits.min-mines", 1));
         final int maxMines = Math.min(24, Math.max(minMines, config.getInt("limits.max-mines", 24)));
         final double houseEdge = clamp(config.getDouble("gameplay.house-edge", 0.03D), 0.0D, 0.20D);
+        final boolean announcementEnabled = config.getBoolean("announcements.enabled", true);
+        final double announcementMinMultiplier = Math.max(1.01D, config.getDouble("announcements.min-multiplier", 5.0D));
         final int saveIntervalSeconds = Math.max(5, config.getInt("stats.save-interval-seconds", 15));
         final long shutdownWaitMillis = Math.max(250L, config.getLong("stats.shutdown-wait-millis", 1500L));
         final int endScreenCloseDelayTicks = Math.max(20, config.getInt("gameplay.end-screen-close-delay-ticks", 50));
@@ -29,6 +33,8 @@ public record PluginSettings(
             minMines,
             maxMines,
             houseEdge,
+            announcementEnabled,
+            announcementMinMultiplier,
             saveIntervalSeconds,
             shutdownWaitMillis,
             endScreenCloseDelayTicks

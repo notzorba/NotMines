@@ -1,4 +1,4 @@
-title: "<gradient:#FFB347:#FF5F6D><bold>NotMines Mines</bold></gradient>"
+title: "<dark_gray>Mines | GUI</dark_gray>"
 
 layout:
   inventory-size: 54
@@ -37,13 +37,13 @@ layout:
 
 items:
   filler:
-    material: DARK_GRAY_STAINED_GLASS_PANE
+    material: BLACK_STAINED_GLASS_PANE
     title: "<dark_gray> </dark_gray>"
     lore: []
 
   hidden-tile:
     material: GRAY_STAINED_GLASS_PANE
-    title: "<gradient:#89F7FE:#66A6FF><bold>Hidden Tile</bold></gradient>"
+    title: "<#8F9FB3>Hidden Tile</#8F9FB3>"
     lore:
       - "<gray>Click to reveal this tile.</gray>"
       - "<gray>Mines on board:</gray> <white><mines></white>"
@@ -51,7 +51,7 @@ items:
 
   safe-tile:
     material: DIAMOND
-    title: "<gradient:#4FACFE:#00F2FE><bold>Safe Diamond</bold></gradient>"
+    title: "<#53B38C>Safe</#53B38C>"
     lore:
       - "<gray>This tile was safe.</gray>"
       - "<gray>Safe picks:</gray> <white><picks></white>"
@@ -59,25 +59,25 @@ items:
 
   unrevealed-safe-tile:
     material: LIGHT_GRAY_STAINED_GLASS_PANE
-    title: "<gray><bold>Safe Tile</bold></gray>"
+    title: "<#A5AFBC>Safe Tile</#A5AFBC>"
     lore:
       - "<gray>This was safe, but unrevealed.</gray>"
 
   cashed-out-tile:
     material: YELLOW_STAINED_GLASS_PANE
-    title: "<gold><bold>Locked In</bold></gold>"
+    title: "<#D5B25C>Locked In</#D5B25C>"
     lore:
       - "<gray>You already secured the payout.</gray>"
 
   mine-tile:
     material: TNT
-    title: "<#FF416C><bold>Mine</bold></#FF416C>"
+    title: "<#D96B6B>Mine</#D96B6B>"
     lore:
-      - "<red>This tile contained a mine.</red>"
+      - "<#E85D75>This tile contained a mine.</#E85D75>"
 
   cashout-active:
     material: EMERALD
-    title: "<gradient:#56CCF2:#2F80ED><bold>Cash Out</bold></gradient>"
+    title: "<#53B38C>Cash Out</#53B38C>"
     lore:
       - "<gray>Current multiplier:</gray> <white><multiplier>x</white>"
       - "<gray>Current payout:</gray> <white><payout></white>"
@@ -86,19 +86,19 @@ items:
 
   cashout-disabled:
     material: BARRIER
-    title: "<red><bold>Round Ended</bold></red>"
+    title: "<#C97A7A>Round Ended</#C97A7A>"
     lore:
       - "<gray>This round has already ended.</gray>"
 
   cashout-collected:
     material: EMERALD
-    title: "<green><bold>Collected</bold></green>"
+    title: "<#53B38C>Collected</#53B38C>"
     lore:
       - "<gray>Payout:</gray> <white><payout></white>"
 
   board-info-active:
     material: COMPASS
-    title: "<#7EE8FA><bold>Board Status</bold></#7EE8FA>"
+    title: "<#7C92B8>Board Status</#7C92B8>"
     lore:
       - "<gray>Safe picks:</gray> <white><safe_picks></white>"
       - "<gray>Remaining safe tiles:</gray> <white><remaining_safe></white>"
@@ -106,21 +106,21 @@ items:
 
   board-info-loss:
     material: COMPASS
-    title: "<red><bold>Mine Hit</bold></red>"
+    title: "<#D96B6B>Mine Hit</#D96B6B>"
     lore:
       - "<gray>Your board exploded before you could cash out.</gray>"
       - "<gray>Safe picks:</gray> <white><safe_picks></white>"
 
   board-info-cashout:
     material: COMPASS
-    title: "<green><bold>Paid Out</bold></green>"
+    title: "<#53B38C>Paid Out</#53B38C>"
     lore:
       - "<gray>Safe picks:</gray> <white><safe_picks></white>"
       - "<gray>Final multiplier:</gray> <white><multiplier>x</white>"
 
   bet-info:
     material: GOLD_INGOT
-    title: "<#FBD786><bold>Bet Info</bold></#FBD786>"
+    title: "<#D5B25C>Bet Info</#D5B25C>"
     lore:
       - "<gray>Wager:</gray> <white><wager></white>"
       - "<gray>Board size:</gray> <white><board_size> tiles</white>"
@@ -128,7 +128,7 @@ items:
 
   odds-info-active:
     material: CLOCK
-    title: "<#C790F2><bold>Odds</bold></#C790F2>"
+    title: "<#8E88D6>Odds</#8E88D6>"
     lore:
       - "<gray>Current multiplier:</gray> <white><multiplier>x</white>"
       - "<gray>Next safe chance:</gray> <white><chance>%</white>"
@@ -136,19 +136,19 @@ items:
 
   odds-info-loss:
     material: PAPER
-    title: "<gray><bold>Payout</bold></gray>"
+    title: "<#A5AFBC>Payout</#A5AFBC>"
     lore:
       - "<gray>This round paid:</gray> <white>0</white>"
 
   odds-info-cashout:
     material: PAPER
-    title: "<gray><bold>House Edge</bold></gray>"
+    title: "<#A5AFBC>House Edge</#A5AFBC>"
     lore:
       - "<gray>Calculated server-side from safe-pick odds.</gray>"
 
   help:
     material: BOOK
-    title: "<#F6D365><bold>Quick Help</bold></#F6D365>"
+    title: "<#C7A768>Quick Help</#C7A768>"
     lore:
       - "<gray>/mines cashout</gray> <white>to claim your current payout</white>"
       - "<gray>/mines reopen</gray> <white>to reopen this board</white>"
@@ -156,14 +156,14 @@ items:
 
   stats-loading:
     material: NETHER_STAR
-    title: "<gradient:#F9D423:#FF4E50><bold>Your Stats</bold></gradient>"
+    title: "<#7588A6>Your Stats</#7588A6>"
     lore:
       - "<gray>Loading your profile snapshot...</gray>"
       - "<dark_gray>This button is informational only.</dark_gray>"
 
   stats-loaded:
     material: NETHER_STAR
-    title: "<gradient:#F9D423:#FF4E50><bold>Your Stats</bold></gradient>"
+    title: "<#7588A6>Your Stats</#7588A6>"
     lore:
       - "<gray>Games:</gray> <white><games></white> <dark_gray>|</dark_gray> <gray>Wins:</gray> <white><wins></white>"
       - "<gray>Losses:</gray> <white><losses></white> <dark_gray>|</dark_gray> <gray>Win Rate:</gray> <white><win_rate>%</white>"

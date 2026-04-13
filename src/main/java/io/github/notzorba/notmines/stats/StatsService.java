@@ -2,6 +2,7 @@ package io.github.notzorba.notmines.stats;
 
 import io.github.notzorba.notmines.config.PluginSettings;
 import java.io.File;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -20,6 +21,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class StatsService {
@@ -60,6 +63,8 @@ public final class StatsService {
     private final Map<String, UUID> nameIndex = new ConcurrentHashMap<>();
     private final AtomicBoolean initialized = new AtomicBoolean(false);
     private final AtomicBoolean shuttingDown = new AtomicBoolean(false);
+    private final Object pendingFileLock = new Object();
+    private final File pendingFile;
 
     private volatile Connection connection;
 
@@ -67,6 +72,7 @@ public final class StatsService {
         this.plugin = plugin;
         this.settings = settings;
         this.executor = Executors.newSingleThreadScheduledExecutor(new StatsThreadFactory());
+        this.pendingFile = new File(new File(this.plugin.getDataFolder(), "data"), "pending-stats.yml");
     }
 
     public void initialize() {
@@ -94,6 +100,7 @@ public final class StatsService {
         final StatsDelta delta = StatsDelta.fromRound(playerName, wagerMinor, payoutMinor, safeTilesCleared, won);
         this.pendingDeltas.merge(playerId, delta, StatsDelta::merge);
         this.nameIndex.put(PlayerStatsSnapshot.normalizeName(playerName), playerId);
+        this.persistPendingToDisk();
     }
 
     public CompletableFuture<PlayerStatsSnapshot> getStatsAsync(final UUID playerId, final String fallbackName) {
@@ -158,10 +165,12 @@ public final class StatsService {
         try {
             Class.forName("org.sqlite.JDBC");
 
-            final File dataDirectory = new File(this.plugin.getDataFolder(), "data");
-            if (!dataDirectory.exists() && !dataDirectory.mkdirs()) {
-                this.plugin.getLogger().warning("Failed to create the NotMines data directory.");
+            final File dataDirectory = this.ensureDataDirectory();
+            if (dataDirectory == null) {
+                throw new IOException("Failed to create the NotMines data directory.");
             }
+
+            this.loadPendingFromDisk();
 
             final File databaseFile = new File(dataDirectory, "stats.db");
             this.connection = DriverManager.getConnection("jdbc:sqlite:" + databaseFile.getAbsolutePath());
@@ -192,6 +201,7 @@ public final class StatsService {
             }
 
             this.connection.commit();
+            this.flushPendingSafely();
         } catch (final Exception exception) {
             this.plugin.getLogger().log(Level.SEVERE, "Failed to initialize the NotMines stats database.", exception);
             this.closeConnection();
@@ -323,6 +333,7 @@ public final class StatsService {
                 });
                 this.nameIndex.put(PlayerStatsSnapshot.normalizeName(delta.lastKnownName()), playerId);
             }
+            this.persistPendingToDisk();
         } catch (final SQLException exception) {
             try {
                 this.connection.rollback();
@@ -345,6 +356,94 @@ public final class StatsService {
         } finally {
             this.connection = null;
         }
+    }
+
+    private void loadPendingFromDisk() {
+        synchronized (this.pendingFileLock) {
+            if (!this.pendingFile.exists()) {
+                return;
+            }
+
+            final YamlConfiguration config = YamlConfiguration.loadConfiguration(this.pendingFile);
+            final ConfigurationSection players = config.getConfigurationSection("players");
+            if (players == null) {
+                return;
+            }
+
+            for (String key : players.getKeys(false)) {
+                final ConfigurationSection section = players.getConfigurationSection(key);
+                if (section == null) {
+                    continue;
+                }
+
+                try {
+                    final UUID playerId = UUID.fromString(key);
+                    final StatsDelta delta = new StatsDelta(
+                        section.getString("last-known-name", ""),
+                        section.getLong("games-played"),
+                        section.getLong("wins"),
+                        section.getLong("losses"),
+                        section.getLong("total-wagered-minor"),
+                        section.getLong("total-paid-minor"),
+                        section.getLong("tiles-cleared"),
+                        section.getLong("best-cashout-minor"),
+                        section.getLong("biggest-bet-minor")
+                    );
+                    this.pendingDeltas.merge(playerId, delta, StatsDelta::merge);
+                    this.nameIndex.put(PlayerStatsSnapshot.normalizeName(delta.lastKnownName()), playerId);
+                } catch (final IllegalArgumentException exception) {
+                    this.plugin.getLogger().log(Level.WARNING, "Skipping malformed pending stats entry for key " + key + ".", exception);
+                }
+            }
+        }
+    }
+
+    private void persistPendingToDisk() {
+        synchronized (this.pendingFileLock) {
+            final Map<UUID, StatsDelta> snapshot = new ConcurrentHashMap<>(this.pendingDeltas);
+            if (snapshot.isEmpty()) {
+                if (this.pendingFile.exists() && !this.pendingFile.delete()) {
+                    this.plugin.getLogger().warning("Failed to delete the pending NotMines stats journal.");
+                }
+                return;
+            }
+
+            final File dataDirectory = this.ensureDataDirectory();
+            if (dataDirectory == null) {
+                this.plugin.getLogger().warning("Failed to persist pending NotMines stats because the data directory is unavailable.");
+                return;
+            }
+
+            final YamlConfiguration config = new YamlConfiguration();
+            for (Map.Entry<UUID, StatsDelta> entry : snapshot.entrySet()) {
+                final String root = "players." + entry.getKey();
+                final StatsDelta delta = entry.getValue();
+                config.set(root + ".last-known-name", delta.lastKnownName());
+                config.set(root + ".games-played", delta.gamesPlayed());
+                config.set(root + ".wins", delta.wins());
+                config.set(root + ".losses", delta.losses());
+                config.set(root + ".total-wagered-minor", delta.totalWageredMinor());
+                config.set(root + ".total-paid-minor", delta.totalPaidMinor());
+                config.set(root + ".tiles-cleared", delta.tilesCleared());
+                config.set(root + ".best-cashout-minor", delta.bestCashoutMinor());
+                config.set(root + ".biggest-bet-minor", delta.biggestBetMinor());
+            }
+
+            try {
+                config.save(this.pendingFile);
+            } catch (final IOException exception) {
+                this.plugin.getLogger().log(Level.WARNING, "Failed to persist pending NotMines stats to disk.", exception);
+            }
+        }
+    }
+
+    private File ensureDataDirectory() {
+        final File dataDirectory = new File(this.plugin.getDataFolder(), "data");
+        if (!dataDirectory.exists() && !dataDirectory.mkdirs()) {
+            this.plugin.getLogger().warning("Failed to create the NotMines data directory.");
+            return null;
+        }
+        return dataDirectory;
     }
 
     private static final class StatsThreadFactory implements ThreadFactory {

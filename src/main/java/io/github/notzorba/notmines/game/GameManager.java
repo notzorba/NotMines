@@ -18,12 +18,11 @@ import org.bukkit.entity.Player;
 
 public final class GameManager {
     private final NotMinesPlugin plugin;
-    private final PluginSettings settings;
-    private final MessageService messages;
-    private final GuiConfig guiConfig;
+    private MessageService messages;
+    private GuiConfig guiConfig;
     private final EconomyBridge economy;
     private final StatsService statsService;
-    private final PayoutTable payoutTable;
+    private PayoutTable payoutTable;
     private final Map<UUID, MinesSession> activeSessions = new ConcurrentHashMap<>();
 
     public GameManager(
@@ -35,7 +34,6 @@ public final class GameManager {
         final StatsService statsService
     ) {
         this.plugin = plugin;
-        this.settings = settings;
         this.messages = messages;
         this.guiConfig = guiConfig;
         this.economy = economy;
@@ -44,6 +42,7 @@ public final class GameManager {
     }
 
     public void startGame(final Player player, final String betInput, final String minesInput) {
+        final PluginSettings settings = this.settings();
         if (this.activeSessions.containsKey(player.getUniqueId())) {
             this.messages.send(player, "command.already-started");
             return;
@@ -53,34 +52,34 @@ public final class GameManager {
         try {
             betMinor = Money.parseMinor(betInput, this.economy.currencyScale());
         } catch (final IllegalArgumentException exception) {
-            this.messages.send(player, "command.invalid-number", Placeholder.unparsed("value", betInput));
+            this.messages.send(player, "command.invalid-bet-format", Placeholder.unparsed("value", betInput));
             return;
         }
 
         final int mineCount;
         try {
-            mineCount = Integer.parseInt(minesInput);
+            mineCount = Integer.parseInt(minesInput.trim());
         } catch (final NumberFormatException exception) {
-            this.messages.send(player, "command.invalid-number", Placeholder.unparsed("value", minesInput));
+            this.messages.send(player, "command.invalid-mines-format", Placeholder.unparsed("value", minesInput));
             return;
         }
 
-        if (betMinor < this.settings.minBetMinor() || betMinor > this.settings.maxBetMinor()) {
+        if (betMinor < settings.minBetMinor() || betMinor > settings.maxBetMinor()) {
             this.messages.send(
                 player,
                 "command.invalid-bet",
-                Placeholder.unparsed("min", this.economy.format(this.settings.minBetMinor())),
-                Placeholder.unparsed("max", this.economy.format(this.settings.maxBetMinor()))
+                Placeholder.unparsed("min", this.economy.format(settings.minBetMinor())),
+                Placeholder.unparsed("max", this.economy.format(settings.maxBetMinor()))
             );
             return;
         }
 
-        if (mineCount < this.settings.minMines() || mineCount > this.settings.maxMines()) {
+        if (mineCount < settings.minMines() || mineCount > settings.maxMines()) {
             this.messages.send(
                 player,
                 "command.invalid-mines",
-                Placeholder.unparsed("min", Integer.toString(this.settings.minMines())),
-                Placeholder.unparsed("max", Integer.toString(this.settings.maxMines()))
+                Placeholder.unparsed("min", Integer.toString(settings.minMines())),
+                Placeholder.unparsed("max", Integer.toString(settings.maxMines()))
             );
             return;
         }
@@ -208,6 +207,35 @@ public final class GameManager {
         this.activeSessions.clear();
     }
 
+    public void reloadRuntimeResources(
+        final MessageService messages,
+        final GuiConfig guiConfig,
+        final PluginSettings settings
+    ) {
+        this.messages = messages;
+        this.guiConfig = guiConfig;
+        this.payoutTable = new PayoutTable(settings.houseEdge());
+
+        for (MinesSession session : this.activeSessions.values()) {
+            final Player player = this.plugin.getServer().getPlayer(session.playerId());
+            final boolean wasViewingCurrentBoard = player != null
+                && player.isOnline()
+                && player.getOpenInventory().getTopInventory() == session.inventory();
+
+            final var inventory = MinesMenu.createInventory(session, this.messages, this.guiConfig, this.economy, this.payoutTable);
+            if (session.statsSnapshot() != null) {
+                MinesMenu.updateStatsButton(session, this.messages, this.guiConfig, this.economy);
+            } else {
+                this.refreshStatsButton(session, false);
+            }
+
+            if (wasViewingCurrentBoard) {
+                session.setSuppressCloseMessage(true);
+                player.openInventory(inventory);
+            }
+        }
+    }
+
     private void handleMineHit(final Player player, final MinesSession session) {
         if (!session.markSettled()) {
             return;
@@ -241,6 +269,7 @@ public final class GameManager {
             return;
         }
 
+        final double multiplier = session.currentMultiplier(this.payoutTable);
         final long payoutMinor = session.currentPayoutMinor(this.payoutTable);
         final EconomyBridge.EconomyResult deposit = this.economy.deposit(payoutTarget, payoutMinor);
         if (!deposit.success()) {
@@ -260,6 +289,9 @@ public final class GameManager {
 
         this.activeSessions.remove(session.playerId());
         this.statsService.recordRound(session.playerId(), session.playerName(), session.betMinor(), payoutMinor, session.safeReveals(), true);
+        if (!forced) {
+            this.announceBigWin(session, payoutMinor, multiplier);
+        }
 
         if (viewer != null && viewer.isOnline()) {
             MinesMenu.renderCashedOut(session, this.messages, this.guiConfig, this.economy, this.payoutTable, payoutMinor);
@@ -272,14 +304,14 @@ public final class GameManager {
                     viewer,
                     "game.board-cleared",
                     Placeholder.unparsed("payout", this.economy.format(payoutMinor)),
-                    Placeholder.unparsed("multiplier", Money.formatMultiplier(session.currentMultiplier(this.payoutTable)))
+                    Placeholder.unparsed("multiplier", Money.formatMultiplier(multiplier))
                 );
             } else {
                 this.messages.send(
                     viewer,
                     "game.cashed-out",
                     Placeholder.unparsed("payout", this.economy.format(payoutMinor)),
-                    Placeholder.unparsed("multiplier", Money.formatMultiplier(session.currentMultiplier(this.payoutTable)))
+                    Placeholder.unparsed("multiplier", Money.formatMultiplier(multiplier))
                 );
             }
 
@@ -295,7 +327,7 @@ public final class GameManager {
             if (player.isOnline() && player.getOpenInventory().getTopInventory() == session.inventory()) {
                 player.closeInventory();
             }
-        }, this.settings.endScreenCloseDelayTicks());
+        }, this.settings().endScreenCloseDelayTicks());
     }
 
     private void closeInventoryImmediately(final Player player, final MinesSession session) {
@@ -331,5 +363,27 @@ public final class GameManager {
                 }
             });
         });
+    }
+
+    private void announceBigWin(final MinesSession session, final long payoutMinor, final double multiplier) {
+        final PluginSettings settings = this.settings();
+        if (!settings.announcementEnabled() || multiplier < settings.announcementMinMultiplier()) {
+            return;
+        }
+
+        final var announcement = this.messages.render(
+            "game.big-win",
+            Placeholder.unparsed("player", session.playerName()),
+            Placeholder.unparsed("payout", this.economy.format(payoutMinor)),
+            Placeholder.unparsed("multiplier", Money.formatMultiplier(multiplier)),
+            Placeholder.unparsed("mines", Integer.toString(session.mineCount()))
+        );
+
+        this.plugin.getServer().getOnlinePlayers().forEach(player -> player.sendMessage(announcement));
+        this.plugin.getServer().getConsoleSender().sendMessage(announcement);
+    }
+
+    private PluginSettings settings() {
+        return this.plugin.settings();
     }
 }

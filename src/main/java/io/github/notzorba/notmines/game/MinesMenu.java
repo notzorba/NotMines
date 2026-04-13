@@ -106,7 +106,9 @@ public final class MinesMenu {
 
         for (int tileIndex = 0; tileIndex < guiConfig.layout().boardSlots().length; tileIndex++) {
             final int slot = guiConfig.layout().boardSlots()[tileIndex];
-            if (session.isSafeRevealed(tileIndex)) {
+            if (session.isMine(tileIndex)) {
+                inventory.setItem(slot, mineTile(messages, guiConfig));
+            } else if (session.isSafeRevealed(tileIndex)) {
                 inventory.setItem(slot, safeTile(messages, guiConfig, economy, session, payouts));
             } else {
                 inventory.setItem(slot, cashedOutTile(messages, guiConfig));

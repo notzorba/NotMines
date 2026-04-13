@@ -2,11 +2,13 @@ package io.github.notzorba.notmines.game;
 
 import io.github.notzorba.notmines.stats.PlayerStatsSnapshot;
 import io.github.notzorba.notmines.util.Money;
+import java.security.SecureRandom;
 import java.util.UUID;
-import java.util.concurrent.ThreadLocalRandom;
 import org.bukkit.inventory.Inventory;
 
 public final class MinesSession {
+    private static final SecureRandom RANDOM = new SecureRandom();
+
     private final UUID playerId;
     private final String playerName;
     private final long betMinor;
@@ -139,9 +141,8 @@ public final class MinesSession {
 
     private void generateMineLayout() {
         int placed = 0;
-        final ThreadLocalRandom random = ThreadLocalRandom.current();
         while (placed < this.mineCount) {
-            final int slot = random.nextInt(PayoutTable.TOTAL_TILES);
+            final int slot = RANDOM.nextInt(PayoutTable.TOTAL_TILES);
             if (!this.mineTiles[slot]) {
                 this.mineTiles[slot] = true;
                 placed++;
