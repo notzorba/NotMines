@@ -205,13 +205,17 @@ public final class StatsService {
 
             final File databaseFile = new File(dataDirectory, "stats.db");
             this.connection = DriverManager.getConnection("jdbc:sqlite:" + databaseFile.getAbsolutePath());
-            this.connection.setAutoCommit(false);
 
             try (Statement statement = this.connection.createStatement()) {
                 statement.execute("PRAGMA journal_mode = WAL");
                 statement.execute("PRAGMA synchronous = NORMAL");
                 statement.execute("PRAGMA temp_store = MEMORY");
                 statement.execute("PRAGMA busy_timeout = 5000");
+            }
+
+            this.connection.setAutoCommit(false);
+
+            try (Statement statement = this.connection.createStatement()) {
                 statement.execute("""
                     CREATE TABLE IF NOT EXISTS player_stats (
                         uuid TEXT PRIMARY KEY,
