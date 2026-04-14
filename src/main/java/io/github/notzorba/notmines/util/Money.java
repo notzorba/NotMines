@@ -55,6 +55,12 @@ public final class Money {
         return BigDecimal.valueOf(amountMinor, scale).doubleValue();
     }
 
+    public static String formatPlainMinor(final long amountMinor, final int scale) {
+        return BigDecimal.valueOf(amountMinor, scale)
+            .setScale(scale, RoundingMode.UNNECESSARY)
+            .toPlainString();
+    }
+
     public static long applyMultiplier(final long amountMinor, final double multiplier) {
         return BigDecimal.valueOf(amountMinor)
             .multiply(BigDecimal.valueOf(multiplier))

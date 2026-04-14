@@ -9,8 +9,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -61,6 +64,7 @@ public final class StatsService {
     private final Map<UUID, PlayerStatsSnapshot> cache = new ConcurrentHashMap<>();
     private final Map<UUID, StatsDelta> pendingDeltas = new ConcurrentHashMap<>();
     private final Map<String, UUID> nameIndex = new ConcurrentHashMap<>();
+    private final Set<UUID> cacheLoadsInFlight = ConcurrentHashMap.newKeySet();
     private final AtomicBoolean initialized = new AtomicBoolean(false);
     private final AtomicBoolean shuttingDown = new AtomicBoolean(false);
     private final Object pendingFileLock = new Object();
@@ -116,6 +120,33 @@ public final class StatsService {
             this.nameIndex.put(stored.searchName(), playerId);
             return stored.merge(this.pendingDeltas.get(playerId));
         }, this.executor);
+    }
+
+    public PlayerStatsSnapshot getCachedStats(final UUID playerId, final String fallbackName) {
+        final PlayerStatsSnapshot cached = this.cache.get(playerId);
+        final StatsDelta pending = this.pendingDeltas.get(playerId);
+        if (cached != null) {
+            return cached.merge(pending);
+        }
+
+        return PlayerStatsSnapshot.empty(playerId, fallbackName).merge(pending);
+    }
+
+    public void preloadStats(final UUID playerId, final String fallbackName) {
+        if (this.cache.containsKey(playerId) || !this.cacheLoadsInFlight.add(playerId)) {
+            return;
+        }
+
+        this.executor.execute(() -> {
+            try {
+                final PlayerStatsSnapshot stored = this.loadByUuid(playerId, fallbackName)
+                    .orElse(PlayerStatsSnapshot.empty(playerId, fallbackName));
+                this.cache.put(playerId, stored);
+                this.nameIndex.put(stored.searchName(), playerId);
+            } finally {
+                this.cacheLoadsInFlight.remove(playerId);
+            }
+        });
     }
 
     public CompletableFuture<Optional<PlayerStatsSnapshot>> getStatsByNameAsync(final String playerName) {
@@ -201,6 +232,7 @@ public final class StatsService {
             }
 
             this.connection.commit();
+            this.loadCacheFromDatabase();
             this.flushPendingSafely();
         } catch (final Exception exception) {
             this.plugin.getLogger().log(Level.SEVERE, "Failed to initialize the NotMines stats database.", exception);
@@ -277,6 +309,34 @@ public final class StatsService {
             resultSet.getLong("best_cashout_minor"),
             resultSet.getLong("biggest_bet_minor")
         );
+    }
+
+    private void loadCacheFromDatabase() {
+        if (this.connection == null) {
+            return;
+        }
+
+        final List<PlayerStatsSnapshot> snapshots = new ArrayList<>();
+        try (Statement statement = this.connection.createStatement();
+             ResultSet resultSet = statement.executeQuery(
+                 """
+                     SELECT uuid, last_name, search_name, games_played, wins, losses, total_wagered_minor,
+                            total_paid_minor, tiles_cleared, best_cashout_minor, biggest_bet_minor
+                     FROM player_stats
+                     """
+             )) {
+            while (resultSet.next()) {
+                snapshots.add(this.mapSnapshot(resultSet));
+            }
+        } catch (final SQLException exception) {
+            this.plugin.getLogger().log(Level.WARNING, "Failed to warm the NotMines stats cache from the database.", exception);
+            return;
+        }
+
+        for (PlayerStatsSnapshot snapshot : snapshots) {
+            this.cache.put(snapshot.uuid(), snapshot);
+            this.nameIndex.put(snapshot.searchName(), snapshot.uuid());
+        }
     }
 
     private void flushPendingSafely() {

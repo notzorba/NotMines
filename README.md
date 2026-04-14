@@ -71,6 +71,10 @@ You will need:
 - [Vault](https://www.spigotmc.org/resources/vault.34315/)
 - Any Vault-compatible economy plugin
 
+Optional:
+
+- [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/) for stats placeholders and leaderboard integrations
+
 This repo is currently built against the Paper `1.20.6` API, so that is the baseline target to test against first rather than a claim that only one exact version works. In practice, the goal is compatibility with modern stable Paper versions, not just `1.20.6`.
 
 Drop the jar into `plugins/`, start the server once, and the plugin will generate its files.
@@ -82,6 +86,41 @@ Main files:
 - `plugins/NotMines/gui.yml`
 
 If Vault or an economy plugin is missing, the plugin disables itself on startup instead of half-working.
+
+## PlaceholderAPI
+
+If PlaceholderAPI is installed, NotMines registers the `%notmines_...%` placeholder set automatically.
+
+Player stat placeholders:
+
+- `%notmines_games%`
+- `%notmines_wins%`
+- `%notmines_losses%`
+- `%notmines_tiles_cleared%`
+- `%notmines_win_rate%`
+- `%notmines_total_wagered%`
+- `%notmines_total_paid%`
+- `%notmines_profit%`
+- `%notmines_best_cashout%`
+- `%notmines_biggest_bet%`
+
+For leaderboard plugins such as Topper, use the raw numeric variants for money values so sorting stays numeric instead of lexicographic:
+
+- `%notmines_total_wagered_raw%`
+- `%notmines_total_paid_raw%`
+- `%notmines_profit_raw%`
+- `%notmines_best_cashout_raw%`
+- `%notmines_biggest_bet_raw%`
+
+If you want integer minor-unit values instead, these are also available:
+
+- `%notmines_total_wagered_minor%`
+- `%notmines_total_paid_minor%`
+- `%notmines_profit_minor%`
+- `%notmines_best_cashout_minor%`
+- `%notmines_biggest_bet_minor%`
+
+The placeholder expansion uses the in-memory stats cache and only schedules background cache fills when needed, so it does not perform synchronous database queries on the server thread.
 
 ## Config Notes
 
@@ -110,6 +149,29 @@ or
 ```
 
 The built jar ends up in `build/libs/`.
+
+Local builds default to the version `dev-SNAPSHOT`. If you want a versioned local jar, pass the release version explicitly:
+
+```bash
+./gradlew build -PreleaseVersion=1.0.1
+```
+
+## Releasing
+
+Releases are tag-driven, so you do not need to edit `build.gradle.kts` every time.
+
+Push a tag like `v1.0.1`:
+
+```bash
+git tag v1.0.1
+git push origin v1.0.1
+```
+
+GitHub Actions will:
+
+- build the plugin with the matching Gradle version `1.0.1`
+- create a GitHub Release for `v1.0.1`
+- upload `NotMines-1.0.1.jar` from `build/libs/`
 
 ## Contributing
 

@@ -5,8 +5,11 @@ plugins {
     java
 }
 
+val releaseVersion = providers.gradleProperty("releaseVersion")
+    .orElse(providers.environmentVariable("RELEASE_VERSION"))
+
 group = "io.github.notzorba"
-version = "1.0.0"
+version = releaseVersion.getOrElse("dev-SNAPSHOT")
 
 val bundled by configurations.creating
 
@@ -14,6 +17,9 @@ repositories {
     mavenCentral()
     maven("https://repo.papermc.io/repository/maven-public/") {
         name = "papermc"
+    }
+    maven("https://repo.extendedclip.com/releases/") {
+        name = "placeholderapi"
     }
     maven("https://jitpack.io") {
         name = "jitpack"
@@ -23,6 +29,7 @@ repositories {
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.20.6-R0.1-SNAPSHOT")
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
+    compileOnly("me.clip:placeholderapi:2.11.7")
 
     bundled("org.xerial:sqlite-jdbc:3.50.3.0")
 

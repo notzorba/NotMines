@@ -6,7 +6,7 @@ author: NotZorba
 website: https://github.com/notzorba
 api-version: '1.20.5'
 prefix: NotMines
-softdepend: [Vault]
+softdepend: [Vault, PlaceholderAPI]
 load: POSTWORLD
 
 commands:

@@ -6,6 +6,7 @@ import io.github.notzorba.notmines.economy.EconomyBridge;
 import io.github.notzorba.notmines.game.GameManager;
 import io.github.notzorba.notmines.gui.GuiConfig;
 import io.github.notzorba.notmines.listener.MinesListener;
+import io.github.notzorba.notmines.placeholder.NotMinesPlaceholderExpansion;
 import io.github.notzorba.notmines.stats.StatsService;
 import io.github.notzorba.notmines.util.MessageService;
 import java.io.File;
@@ -50,6 +51,7 @@ public final class NotMinesPlugin extends JavaPlugin {
         this.registerCommand();
         this.getServer().getPluginManager().registerEvents(new MinesListener(this.gameManager), this);
         this.statsService.initialize();
+        this.registerPlaceholders();
 
         this.getLogger().info("NotMines enabled with async stats persistence and Vault economy support.");
     }
@@ -115,6 +117,20 @@ public final class NotMinesPlugin extends JavaPlugin {
         if (!file.exists()) {
             this.saveResource(resourcePath, false);
         }
+    }
+
+    private void registerPlaceholders() {
+        if (!this.getServer().getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+            return;
+        }
+
+        final NotMinesPlaceholderExpansion expansion = new NotMinesPlaceholderExpansion(this);
+        if (!expansion.register()) {
+            this.getLogger().warning("PlaceholderAPI was found, but NotMines placeholders could not be registered.");
+            return;
+        }
+
+        this.getLogger().info("Registered PlaceholderAPI placeholders for NotMines stats.");
     }
 
     public void reloadRuntimeResources() {
