@@ -13,6 +13,8 @@ public final class MinesSession {
     private final String playerName;
     private final long betMinor;
     private final int mineCount;
+    private final String skinTexture;
+    private final String skinTextureSignature;
     private final boolean[] mineTiles;
     private final boolean[] revealedSafeTiles;
 
@@ -22,11 +24,20 @@ public final class MinesSession {
     private int safeReveals;
     private volatile PlayerStatsSnapshot statsSnapshot;
 
-    public MinesSession(final UUID playerId, final String playerName, final long betMinor, final int mineCount) {
+    public MinesSession(
+        final UUID playerId,
+        final String playerName,
+        final long betMinor,
+        final int mineCount,
+        final String skinTexture,
+        final String skinTextureSignature
+    ) {
         this.playerId = playerId;
         this.playerName = playerName;
         this.betMinor = betMinor;
         this.mineCount = mineCount;
+        this.skinTexture = skinTexture;
+        this.skinTextureSignature = skinTextureSignature;
         this.mineTiles = new boolean[PayoutTable.TOTAL_TILES];
         this.revealedSafeTiles = new boolean[PayoutTable.TOTAL_TILES];
         this.generateMineLayout();
@@ -46,6 +57,14 @@ public final class MinesSession {
 
     public int mineCount() {
         return this.mineCount;
+    }
+
+    public String skinTexture() {
+        return this.skinTexture;
+    }
+
+    public String skinTextureSignature() {
+        return this.skinTextureSignature;
     }
 
     public Inventory inventory() {

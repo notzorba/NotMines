@@ -30,11 +30,12 @@ public record GuiConfig(
     GuiItemTemplate oddsInfoCashout,
     GuiItemTemplate help,
     GuiItemTemplate statsLoading,
-    GuiItemTemplate statsLoaded
+    GuiItemTemplate statsLoaded,
+    LeaderboardGuiConfig leaderboard
 ) {
     public static GuiConfig load(final File file) {
         final YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
-        final int inventorySize = validateInventorySize(config.getInt("layout.inventory-size", 54));
+        final int inventorySize = validateInventorySize(config.getInt("layout.inventory-size", 54), "GUI");
         final int[] boardSlots = loadBoardSlots(config, inventorySize);
 
         final GuiLayout layout = new GuiLayout(
@@ -70,13 +71,53 @@ public record GuiConfig(
             loadItem(config, "items.odds-info-cashout", Material.PAPER, "<#A5AFBC>House Edge</#A5AFBC>"),
             loadItem(config, "items.help", Material.BOOK, "<#C7A768>Quick Help</#C7A768>"),
             loadItem(config, "items.stats-loading", Material.NETHER_STAR, "<#7588A6>Your Stats</#7588A6>"),
-            loadItem(config, "items.stats-loaded", Material.NETHER_STAR, "<#7588A6>Your Stats</#7588A6>")
+            loadItem(config, "items.stats-loaded", Material.NETHER_STAR, "<#7588A6>Your Stats</#7588A6>"),
+            loadLeaderboard(config)
         );
     }
 
-    private static int validateInventorySize(final int inventorySize) {
+    private static LeaderboardGuiConfig loadLeaderboard(final YamlConfiguration config) {
+        final int inventorySize = validateInventorySize(config.getInt("leaderboard.layout.inventory-size", 54), "Leaderboard GUI");
+        final int[] entrySlots = loadSlots(
+            config,
+            "leaderboard.layout.entry-slots",
+            inventorySize,
+            defaultLeaderboardEntrySlots(),
+            "leaderboard entry"
+        );
+
+        final LeaderboardLayout leaderboardLayout = new LeaderboardLayout(
+            inventorySize,
+            entrySlots,
+            loadSlot(config, "leaderboard.layout.summary-slot", inventorySize, 4),
+            loadSlot(config, "leaderboard.layout.filter-slot", inventorySize, 49),
+            loadSlot(config, "leaderboard.layout.previous-page-slot", inventorySize, 47),
+            loadSlot(config, "leaderboard.layout.next-page-slot", inventorySize, 51),
+            loadSlot(config, "leaderboard.layout.page-info-slot", inventorySize, 53),
+            loadSlot(config, "leaderboard.layout.close-slot", inventorySize, 45)
+        );
+        validateLayout(leaderboardLayout);
+
+        return new LeaderboardGuiConfig(
+            config.getString("leaderboard.title", "<dark_gray>Mines | Leaderboard</dark_gray>"),
+            leaderboardLayout,
+            loadItem(config, "leaderboard.items.filler", Material.BLACK_STAINED_GLASS_PANE, "<dark_gray> </dark_gray>"),
+            loadItem(config, "leaderboard.items.summary", Material.COMPARATOR, "<#F4C95D>Leaderboard Summary</#F4C95D>"),
+            loadItem(config, "leaderboard.items.filter", Material.HOPPER, "<#7BAAF7>Sort Filter</#7BAAF7>"),
+            loadItem(config, "leaderboard.items.loading", Material.CLOCK, "<#7BAAF7>Loading Leaderboard</#7BAAF7>"),
+            loadItem(config, "leaderboard.items.empty", Material.PAPER, "<#D5B25C>No Ranked Players Yet</#D5B25C>"),
+            loadItem(config, "leaderboard.items.entry", Material.PLAYER_HEAD, "<#F5F7FA>#<rank> <player></#F5F7FA>"),
+            loadItem(config, "leaderboard.items.focused-entry", Material.PLAYER_HEAD, "<#F5F7FA>#<rank> <player></#F5F7FA>"),
+            loadItem(config, "leaderboard.items.previous-page", Material.ARROW, "<#A5AFBC>Previous Page</#A5AFBC>"),
+            loadItem(config, "leaderboard.items.next-page", Material.ARROW, "<#A5AFBC>Next Page</#A5AFBC>"),
+            loadItem(config, "leaderboard.items.page-info", Material.BOOK, "<#7C92B8>Page <page>/<pages></#7C92B8>"),
+            loadItem(config, "leaderboard.items.close", Material.BARRIER, "<#D96B6B>Close</#D96B6B>")
+        );
+    }
+
+    private static int validateInventorySize(final int inventorySize, final String label) {
         if (inventorySize < 9 || inventorySize > 54 || inventorySize % 9 != 0) {
-            throw new IllegalArgumentException("GUI inventory size must be a multiple of 9 between 9 and 54.");
+            throw new IllegalArgumentException(label + " inventory size must be a multiple of 9 between 9 and 54.");
         }
         return inventorySize;
     }
@@ -106,6 +147,46 @@ public record GuiConfig(
         return slots;
     }
 
+    private static int[] loadSlots(
+        final YamlConfiguration config,
+        final String path,
+        final int inventorySize,
+        final int[] fallback,
+        final String label
+    ) {
+        final List<Integer> configuredValues = config.getIntegerList(path);
+        final List<Integer> values = configuredValues.isEmpty()
+            ? java.util.Arrays.stream(fallback).boxed().toList()
+            : configuredValues;
+        if (values.isEmpty()) {
+            throw new IllegalArgumentException(path + " must contain at least 1 " + label + " slot.");
+        }
+
+        final int[] slots = new int[values.size()];
+        final Set<Integer> uniqueSlots = new HashSet<>();
+        for (int index = 0; index < values.size(); index++) {
+            final int slot = values.get(index);
+            if (slot < 0 || slot >= inventorySize) {
+                throw new IllegalArgumentException(path + " contains a slot outside the inventory bounds.");
+            }
+            if (!uniqueSlots.add(slot)) {
+                throw new IllegalArgumentException(path + " may not contain duplicate slots.");
+            }
+            slots[index] = slot;
+        }
+
+        return slots;
+    }
+
+    private static int[] defaultLeaderboardEntrySlots() {
+        return new int[] {
+            10, 11, 12, 13, 14, 15, 16,
+            19, 20, 21, 22, 23, 24, 25,
+            28, 29, 30, 31, 32, 33, 34,
+            37, 38, 39, 40, 41, 42, 43
+        };
+    }
+
     private static int loadSlot(
         final YamlConfiguration config,
         final String path,
@@ -131,6 +212,20 @@ public record GuiConfig(
         validateUtilitySlot(occupied, layout.cashoutSlot(), "layout.cashout-slot");
         validateUtilitySlot(occupied, layout.oddsSlot(), "layout.odds-slot");
         validateUtilitySlot(occupied, layout.helpSlot(), "layout.help-slot");
+    }
+
+    private static void validateLayout(final LeaderboardLayout layout) {
+        final Set<Integer> occupied = new HashSet<>();
+        for (int slot : layout.entrySlots()) {
+            occupied.add(slot);
+        }
+
+        validateUtilitySlot(occupied, layout.summarySlot(), "leaderboard.layout.summary-slot");
+        validateUtilitySlot(occupied, layout.filterSlot(), "leaderboard.layout.filter-slot");
+        validateUtilitySlot(occupied, layout.previousPageSlot(), "leaderboard.layout.previous-page-slot");
+        validateUtilitySlot(occupied, layout.nextPageSlot(), "leaderboard.layout.next-page-slot");
+        validateUtilitySlot(occupied, layout.pageInfoSlot(), "leaderboard.layout.page-info-slot");
+        validateUtilitySlot(occupied, layout.closeSlot(), "leaderboard.layout.close-slot");
     }
 
     private static void validateUtilitySlot(final Set<Integer> occupied, final int slot, final String path) {

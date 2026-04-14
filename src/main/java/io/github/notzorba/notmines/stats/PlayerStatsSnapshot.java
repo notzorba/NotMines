@@ -14,7 +14,9 @@ public record PlayerStatsSnapshot(
     long totalPaidMinor,
     long tilesCleared,
     long bestCashoutMinor,
-    long biggestBetMinor
+    long biggestBetMinor,
+    String skinTexture,
+    String skinTextureSignature
 ) {
     public static PlayerStatsSnapshot empty(final UUID uuid, final String playerName) {
         return new PlayerStatsSnapshot(
@@ -28,7 +30,9 @@ public record PlayerStatsSnapshot(
             0L,
             0L,
             0L,
-            0L
+            0L,
+            null,
+            null
         );
     }
 
@@ -38,6 +42,11 @@ public record PlayerStatsSnapshot(
         }
 
         final String mergedName = delta.lastKnownName().isBlank() ? this.lastKnownName : delta.lastKnownName();
+        final boolean updatedTexturePresent = hasText(delta.skinTexture());
+        final String mergedSkinTexture = updatedTexturePresent ? delta.skinTexture() : this.skinTexture;
+        final String mergedSkinTextureSignature = updatedTexturePresent
+            ? blankToNull(delta.skinTextureSignature())
+            : this.skinTextureSignature;
         return new PlayerStatsSnapshot(
             this.uuid,
             mergedName,
@@ -49,12 +58,18 @@ public record PlayerStatsSnapshot(
             this.totalPaidMinor + delta.totalPaidMinor(),
             this.tilesCleared + delta.tilesCleared(),
             Math.max(this.bestCashoutMinor, delta.bestCashoutMinor()),
-            Math.max(this.biggestBetMinor, delta.biggestBetMinor())
+            Math.max(this.biggestBetMinor, delta.biggestBetMinor()),
+            mergedSkinTexture,
+            mergedSkinTextureSignature
         );
     }
 
     public boolean hasActivity() {
         return this.gamesPlayed > 0L;
+    }
+
+    public boolean hasSkinTexture() {
+        return this.skinTexture != null && !this.skinTexture.isBlank();
     }
 
     public long netProfitMinor() {
@@ -67,5 +82,13 @@ public record PlayerStatsSnapshot(
 
     public static String normalizeName(final String name) {
         return name == null ? "" : name.toLowerCase(Locale.ROOT);
+    }
+
+    private static boolean hasText(final String value) {
+        return value != null && !value.isBlank();
+    }
+
+    private static String blankToNull(final String value) {
+        return hasText(value) ? value : null;
     }
 }

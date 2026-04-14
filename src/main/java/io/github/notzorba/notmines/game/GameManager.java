@@ -1,5 +1,6 @@
 package io.github.notzorba.notmines.game;
 
+import com.destroystokyo.paper.profile.ProfileProperty;
 import io.github.notzorba.notmines.NotMinesPlugin;
 import io.github.notzorba.notmines.config.PluginSettings;
 import io.github.notzorba.notmines.economy.EconomyBridge;
@@ -95,7 +96,15 @@ public final class GameManager {
             return;
         }
 
-        final MinesSession session = new MinesSession(player.getUniqueId(), player.getName(), betMinor, mineCount);
+        final ProfileTextures textures = this.captureProfileTextures(player);
+        final MinesSession session = new MinesSession(
+            player.getUniqueId(),
+            player.getName(),
+            betMinor,
+            mineCount,
+            textures.texture(),
+            textures.signature()
+        );
         this.activeSessions.put(player.getUniqueId(), session);
         player.openInventory(MinesMenu.createInventory(session, this.messages, this.guiConfig, this.economy, this.payoutTable));
         this.refreshStatsButton(session, false);
@@ -106,6 +115,10 @@ public final class GameManager {
             Placeholder.unparsed("bet", this.economy.format(betMinor)),
             Placeholder.unparsed("mines", Integer.toString(mineCount))
         );
+    }
+
+    public void handleJoin(final Player player) {
+        this.statsService.preloadStats(player.getUniqueId(), player.getName());
     }
 
     public void reopen(final Player player) {
@@ -243,7 +256,16 @@ public final class GameManager {
 
         this.activeSessions.remove(session.playerId());
         MinesMenu.renderLoss(session, this.messages, this.guiConfig, this.economy);
-        this.statsService.recordRound(session.playerId(), session.playerName(), session.betMinor(), 0L, session.safeReveals(), false);
+        this.statsService.recordRound(
+            session.playerId(),
+            session.playerName(),
+            session.betMinor(),
+            0L,
+            session.safeReveals(),
+            false,
+            session.skinTexture(),
+            session.skinTextureSignature()
+        );
         this.refreshStatsButton(session, true);
         this.messages.send(player, "game.hit-mine", Placeholder.unparsed("bet", this.economy.format(session.betMinor())));
         this.scheduleInventoryClose(player, session);
@@ -288,7 +310,16 @@ public final class GameManager {
         }
 
         this.activeSessions.remove(session.playerId());
-        this.statsService.recordRound(session.playerId(), session.playerName(), session.betMinor(), payoutMinor, session.safeReveals(), true);
+        this.statsService.recordRound(
+            session.playerId(),
+            session.playerName(),
+            session.betMinor(),
+            payoutMinor,
+            session.safeReveals(),
+            true,
+            session.skinTexture(),
+            session.skinTextureSignature()
+        );
         if (!forced) {
             this.announceBigWin(session, payoutMinor, multiplier);
         }
@@ -385,5 +416,20 @@ public final class GameManager {
 
     private PluginSettings settings() {
         return this.plugin.settings();
+    }
+
+    private ProfileTextures captureProfileTextures(final Player player) {
+        final ProfileProperty property = player.getPlayerProfile().getProperties().stream()
+            .filter(candidate -> "textures".equalsIgnoreCase(candidate.getName()))
+            .findFirst()
+            .orElse(null);
+        if (property == null) {
+            return new ProfileTextures(null, null);
+        }
+
+        return new ProfileTextures(property.getValue(), property.getSignature());
+    }
+
+    private record ProfileTextures(String texture, String signature) {
     }
 }

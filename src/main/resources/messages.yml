@@ -15,6 +15,7 @@ command:
     - "<prefix> <white>/mines cashout</white> <gray>- Take the current payout.</gray>"
     - "<prefix> <white>/mines reopen</white> <gray>- Reopen your active board.</gray>"
     - "<prefix> <white>/mines stats [player]</white> <gray>- View mines statistics.</gray>"
+    - "<prefix> <white>/minestop</white> <gray>- Open the mines leaderboard GUI.</gray>"
   help-admin:
     - "<prefix> <white>/mines limits</white> <gray>- Show the live bet and mine limits.</gray>"
     - "<prefix> <white>/mines limits <limit> <value></white> <gray>- Update <white>min-bet</white>, <white>max-bet</white>, <white>min-mines</white>, or <white>max-mines</white>.</gray>"

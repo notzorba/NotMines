@@ -15,6 +15,11 @@ commands:
     usage: /mines <bet> <mines> or /mines <subcommand>
     aliases: [minegame]
     permission: notmines.use
+  minestop:
+    description: Open the mines stats leaderboard.
+    usage: /minestop
+    aliases: [mtop]
+    permission: notmines.use
 
 permissions:
   notmines.use:

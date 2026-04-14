@@ -1,14 +1,17 @@
 package io.github.notzorba.notmines;
 
 import io.github.notzorba.notmines.command.MinesCommand;
+import io.github.notzorba.notmines.command.MinesTopCommand;
 import io.github.notzorba.notmines.config.PluginSettings;
 import io.github.notzorba.notmines.economy.EconomyBridge;
 import io.github.notzorba.notmines.game.GameManager;
 import io.github.notzorba.notmines.gui.GuiConfig;
+import io.github.notzorba.notmines.leaderboard.LeaderboardManager;
 import io.github.notzorba.notmines.listener.MinesListener;
 import io.github.notzorba.notmines.placeholder.NotMinesPlaceholderExpansion;
 import io.github.notzorba.notmines.stats.StatsService;
 import io.github.notzorba.notmines.util.MessageService;
+import io.github.notzorba.notmines.util.YamlResourceUpdater;
 import java.io.File;
 import java.util.Objects;
 import org.bukkit.command.PluginCommand;
@@ -21,13 +24,13 @@ public final class NotMinesPlugin extends JavaPlugin {
     private StatsService statsService;
     private GameManager gameManager;
     private GuiConfig guiConfig;
+    private LeaderboardManager leaderboardManager;
     private MinesCommand minesCommand;
+    private MinesTopCommand minesTopCommand;
 
     @Override
     public void onEnable() {
-        this.saveDefaultConfig();
-        this.ensureResource("messages.yml");
-        this.ensureResource("gui.yml");
+        this.syncBundledYamlResources();
 
         try {
             this.messages = this.loadMessages();
@@ -47,9 +50,10 @@ public final class NotMinesPlugin extends JavaPlugin {
         this.reloadSettings();
         this.statsService = new StatsService(this, this.settings);
         this.gameManager = new GameManager(this, this.settings, this.messages, this.guiConfig, this.economyBridge, this.statsService);
+        this.leaderboardManager = new LeaderboardManager(this, this.statsService, this.messages, this.guiConfig, this.economyBridge);
 
-        this.registerCommand();
-        this.getServer().getPluginManager().registerEvents(new MinesListener(this.gameManager), this);
+        this.registerCommands();
+        this.getServer().getPluginManager().registerEvents(new MinesListener(this.gameManager, this.leaderboardManager), this);
         this.statsService.initialize();
         this.registerPlaceholders();
 
@@ -101,22 +105,22 @@ public final class NotMinesPlugin extends JavaPlugin {
         this.reloadSettings();
     }
 
-    private void registerCommand() {
+    private void registerCommands() {
         final PluginCommand minesCommand = Objects.requireNonNull(
             this.getCommand("mines"),
             "The /mines command is missing from plugin.yml."
+        );
+        final PluginCommand minesTopCommand = Objects.requireNonNull(
+            this.getCommand("minestop"),
+            "The /minestop command is missing from plugin.yml."
         );
 
         this.minesCommand = new MinesCommand(this, this.gameManager, this.statsService, this.messages);
         minesCommand.setExecutor(this.minesCommand);
         minesCommand.setTabCompleter(this.minesCommand);
-    }
 
-    private void ensureResource(final String resourcePath) {
-        final File file = new File(this.getDataFolder(), resourcePath);
-        if (!file.exists()) {
-            this.saveResource(resourcePath, false);
-        }
+        this.minesTopCommand = new MinesTopCommand(this, this.leaderboardManager);
+        minesTopCommand.setExecutor(this.minesTopCommand);
     }
 
     private void registerPlaceholders() {
@@ -134,7 +138,7 @@ public final class NotMinesPlugin extends JavaPlugin {
     }
 
     public void reloadRuntimeResources() {
-        this.reloadConfig();
+        this.syncBundledYamlResources();
 
         final MessageService reloadedMessages = this.loadMessages();
         final GuiConfig reloadedGuiConfig = this.loadGuiConfig();
@@ -146,6 +150,10 @@ public final class NotMinesPlugin extends JavaPlugin {
 
         if (this.gameManager != null) {
             this.gameManager.reloadRuntimeResources(this.messages, this.guiConfig, this.settings);
+        }
+
+        if (this.leaderboardManager != null) {
+            this.leaderboardManager.reloadRuntimeResources(this.messages, this.guiConfig);
         }
 
         if (this.minesCommand != null) {
@@ -163,5 +171,19 @@ public final class NotMinesPlugin extends JavaPlugin {
 
     private PluginSettings loadSettings() {
         return PluginSettings.load(this.getConfig(), this.economyBridge.currencyScale());
+    }
+
+    private void syncBundledYamlResources() {
+        this.saveDefaultConfig();
+        this.syncBundledYaml("config.yml");
+        this.syncBundledYaml("messages.yml");
+        this.syncBundledYaml("gui.yml");
+        this.reloadConfig();
+    }
+
+    private void syncBundledYaml(final String resourcePath) {
+        if (YamlResourceUpdater.sync(this, resourcePath)) {
+            this.getLogger().info("Merged new defaults into " + resourcePath + ".");
+        }
     }
 }
