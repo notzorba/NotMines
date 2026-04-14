@@ -13,6 +13,10 @@ version = releaseVersion.getOrElse("dev-SNAPSHOT")
 
 val bundled by configurations.creating
 
+configurations.compileOnly {
+    extendsFrom(bundled)
+}
+
 repositories {
     mavenCentral()
     maven("https://repo.papermc.io/repository/maven-public/") {

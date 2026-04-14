@@ -4,7 +4,6 @@ import io.github.notzorba.notmines.config.PluginSettings;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -27,6 +26,7 @@ import java.util.logging.Level;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.sqlite.SQLiteConfig;
 
 public final class StatsService {
     private static final String UPSERT_SQL = """
@@ -204,14 +204,7 @@ public final class StatsService {
             this.loadPendingFromDisk();
 
             final File databaseFile = new File(dataDirectory, "stats.db");
-            this.connection = DriverManager.getConnection("jdbc:sqlite:" + databaseFile.getAbsolutePath());
-
-            try (Statement statement = this.connection.createStatement()) {
-                statement.execute("PRAGMA journal_mode = WAL");
-                statement.execute("PRAGMA synchronous = NORMAL");
-                statement.execute("PRAGMA temp_store = MEMORY");
-                statement.execute("PRAGMA busy_timeout = 5000");
-            }
+            this.connection = this.openConnection(databaseFile);
 
             this.connection.setAutoCommit(false);
 
@@ -242,6 +235,37 @@ public final class StatsService {
             this.plugin.getLogger().log(Level.SEVERE, "Failed to initialize the NotMines stats database.", exception);
             this.closeConnection();
         }
+    }
+
+    private Connection openConnection(final File databaseFile) throws SQLException {
+        try {
+            return this.createConnection(databaseFile, true);
+        } catch (final SQLException exception) {
+            if (!this.isWalModeFailure(exception)) {
+                throw exception;
+            }
+
+            this.plugin.getLogger().warning(
+                "SQLite WAL mode could not be enabled for NotMines stats; falling back to the default journal mode."
+            );
+            return this.createConnection(databaseFile, false);
+        }
+    }
+
+    private Connection createConnection(final File databaseFile, final boolean preferWal) throws SQLException {
+        final SQLiteConfig sqliteConfig = new SQLiteConfig();
+        if (preferWal) {
+            sqliteConfig.setJournalMode(SQLiteConfig.JournalMode.WAL);
+            sqliteConfig.setSynchronous(SQLiteConfig.SynchronousMode.NORMAL);
+        }
+        sqliteConfig.setTempStore(SQLiteConfig.TempStore.MEMORY);
+        sqliteConfig.setBusyTimeout(5000);
+        return sqliteConfig.createConnection("jdbc:sqlite:" + databaseFile.getAbsolutePath());
+    }
+
+    private boolean isWalModeFailure(final SQLException exception) {
+        final String message = exception.getMessage();
+        return message != null && message.toLowerCase().contains("cannot change into wal mode");
     }
 
     private Optional<PlayerStatsSnapshot> loadByUuid(final UUID playerId, final String fallbackName) {
