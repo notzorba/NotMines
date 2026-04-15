@@ -5,10 +5,13 @@ import io.github.notzorba.notmines.NotMinesPlugin;
 import io.github.notzorba.notmines.config.PluginSettings;
 import io.github.notzorba.notmines.economy.EconomyBridge;
 import io.github.notzorba.notmines.gui.GuiConfig;
+import io.github.notzorba.notmines.gui.GuiSoundEffect;
+import io.github.notzorba.notmines.gui.GuiSoundPlayer;
 import io.github.notzorba.notmines.stats.StatsService;
 import io.github.notzorba.notmines.util.MessageService;
 import io.github.notzorba.notmines.util.Money;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -107,6 +110,7 @@ public final class GameManager {
         );
         this.activeSessions.put(player.getUniqueId(), session);
         player.openInventory(MinesMenu.createInventory(session, this.messages, this.guiConfig, this.economy, this.payoutTable));
+        this.playBoardOpenSound(player);
         this.refreshStatsButton(session, false);
 
         this.messages.send(
@@ -131,6 +135,7 @@ public final class GameManager {
         session.setSuppressCloseMessage(true);
         player.openInventory(session.inventory());
         MinesMenu.renderActive(session, this.messages, this.guiConfig, this.economy, this.payoutTable);
+        this.playBoardOpenSound(player);
         this.refreshStatsButton(session, false);
     }
 
@@ -169,7 +174,11 @@ public final class GameManager {
             return;
         }
 
+        final boolean boardCleared = session.isBoardCleared();
         MinesMenu.renderActive(session, this.messages, this.guiConfig, this.economy, this.payoutTable);
+        if (!boardCleared) {
+            this.playSafePickSound(player, session);
+        }
         this.messages.send(
             player,
             "game.hit-safe",
@@ -177,7 +186,7 @@ public final class GameManager {
             Placeholder.unparsed("payout", this.economy.format(session.currentPayoutMinor(this.payoutTable)))
         );
 
-        if (session.isBoardCleared()) {
+        if (boardCleared) {
             this.trySettleCashout(player, session, false, true);
         }
     }
@@ -256,6 +265,7 @@ public final class GameManager {
 
         this.activeSessions.remove(session.playerId());
         MinesMenu.renderLoss(session, this.messages, this.guiConfig, this.economy);
+        this.playMineHitSound(player);
         this.statsService.recordRound(
             session.playerId(),
             session.playerName(),
@@ -327,6 +337,13 @@ public final class GameManager {
         if (viewer != null && viewer.isOnline()) {
             MinesMenu.renderCashedOut(session, this.messages, this.guiConfig, this.economy, this.payoutTable, payoutMinor);
             this.refreshStatsButton(session, true);
+            if (!forced) {
+                if (session.isBoardCleared()) {
+                    this.playBoardClearedSound(viewer);
+                } else {
+                    this.playCashoutSound(viewer);
+                }
+            }
 
             if (forced) {
                 this.messages.send(viewer, "game.forced-cashout", Placeholder.unparsed("payout", this.economy.format(payoutMinor)));
@@ -416,6 +433,36 @@ public final class GameManager {
 
     private PluginSettings settings() {
         return this.plugin.settings();
+    }
+
+    private void playBoardOpenSound(final Player player) {
+        this.playGuiSound(player, this.guiConfig.sounds().boardOpen(), 0.0F);
+    }
+
+    private void playSafePickSound(final Player player, final MinesSession session) {
+        // Lift the reward tone slightly as the streak grows so repeat picks feel more satisfying.
+        final float pitchBoost = Math.min(session.safeReveals(), 8) * 0.045F;
+        this.playGuiSound(player, this.guiConfig.sounds().safePick(), pitchBoost);
+    }
+
+    private void playMineHitSound(final Player player) {
+        this.playGuiSound(player, this.guiConfig.sounds().mineHit(), 0.0F);
+    }
+
+    private void playCashoutSound(final Player player) {
+        this.playGuiSound(player, this.guiConfig.sounds().cashout(), 0.0F);
+    }
+
+    private void playBoardClearedSound(final Player player) {
+        this.playGuiSound(player, this.guiConfig.sounds().boardCleared(), 0.0F);
+    }
+
+    private void playGuiSound(final Player player, final List<GuiSoundEffect> effects, final float pitchBoost) {
+        if (!this.guiConfig.sounds().enabled() || effects.isEmpty()) {
+            return;
+        }
+
+        GuiSoundPlayer.play(this.plugin, player, effects, pitchBoost);
     }
 
     private ProfileTextures captureProfileTextures(final Player player) {
