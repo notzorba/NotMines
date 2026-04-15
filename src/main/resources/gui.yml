@@ -35,6 +35,53 @@ layout:
   odds-slot: 51
   help-slot: 53
 
+sounds:
+  enabled: true
+
+  board-open:
+    - sound: UI_BUTTON_CLICK
+      volume: 0.65
+      pitch: 1.10
+    - sound: ITEM_BOOK_PAGE_TURN
+      volume: 0.50
+      pitch: 1.25
+
+  safe-pick:
+    - sound: BLOCK_NOTE_BLOCK_CHIME
+      volume: 0.60
+      pitch: 1.30
+    - sound: ENTITY_EXPERIENCE_ORB_PICKUP
+      volume: 0.40
+      pitch: 1.70
+      delay-ticks: 1
+
+  mine-hit:
+    - sound: ENTITY_GENERIC_EXPLODE
+      volume: 0.95
+      pitch: 0.75
+    - sound: BLOCK_GLASS_BREAK
+      volume: 0.60
+      pitch: 0.60
+      delay-ticks: 1
+
+  cashout:
+    - sound: ENTITY_PLAYER_LEVELUP
+      volume: 0.75
+      pitch: 1.20
+    - sound: BLOCK_NOTE_BLOCK_PLING
+      volume: 0.55
+      pitch: 1.55
+      delay-ticks: 1
+
+  board-cleared:
+    - sound: UI_TOAST_CHALLENGE_COMPLETE
+      volume: 0.90
+      pitch: 1.05
+    - sound: ENTITY_PLAYER_LEVELUP
+      volume: 0.80
+      pitch: 1.45
+      delay-ticks: 2
+
 items:
   filler:
     material: BLACK_STAINED_GLASS_PANE

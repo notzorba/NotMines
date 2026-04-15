@@ -12,6 +12,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 public record GuiConfig(
     String title,
     GuiLayout layout,
+    GuiSoundConfig sounds,
     GuiItemTemplate filler,
     GuiItemTemplate hiddenTile,
     GuiItemTemplate safeTile,
@@ -53,6 +54,7 @@ public record GuiConfig(
         return new GuiConfig(
             config.getString("title", "<dark_gray>Mines | GUI</dark_gray>"),
             layout,
+            GuiSoundConfig.load(config),
             loadItem(config, "items.filler", Material.BLACK_STAINED_GLASS_PANE, "<dark_gray> </dark_gray>"),
             loadItem(config, "items.hidden-tile", Material.GRAY_STAINED_GLASS_PANE, "<#8F9FB3>Hidden Tile</#8F9FB3>"),
             loadItem(config, "items.safe-tile", Material.DIAMOND, "<#53B38C>Safe</#53B38C>"),

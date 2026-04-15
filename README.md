@@ -29,9 +29,12 @@ It is built against the Paper `1.20.6` API for broad compatibility, and is inten
 - Supports compact number inputs like `1k`, `1.1k`, `1m`, `1.4m`, and `1b`
 - Lets admins change live limits in game
 - Reloads `config.yml`, `messages.yml`, and `gui.yml` with `/mines reload`
+- Includes a `/minestop` leaderboard GUI with player-head entries, stat filters, and pagination
+- Plays configurable GUI sound cues for board open, safe picks, mine hits, cashouts, and full-board clears
 - Announces big wins globally when they pass a configurable multiplier
 - Saves player stats to SQLite
 - Keeps a small pending stats journal so reloads and unloads are less likely to lose progress
+- Merges new bundled YAML keys into existing files without overwriting server-specific values
 - Reveals the mine locations after a loss or cashout
 - Uses `SecureRandom` for mine placement
 
@@ -41,11 +44,12 @@ It is built against the Paper `1.20.6` API for broad compatibility, and is inten
 - `/mines cashout` cashes out your current board
 - `/mines reopen` reopens your current board
 - `/mines stats [player]` shows your stats, or another player's with permission
+- `/minestop` opens the mines leaderboard GUI
 - `/mines limits` shows the current live limits
 - `/mines limits <min-bet|max-bet|min-mines|max-mines> <value>` changes limits in game
 - `/mines reload` reloads config, GUI, and messages
 
-Alias: `/minegame`
+Aliases: `/minegame`, `/mtop`
 
 Examples:
 
@@ -86,6 +90,18 @@ Main files:
 - `plugins/NotMines/gui.yml`
 
 If Vault or an economy plugin is missing, the plugin disables itself on startup instead of half-working.
+
+On startup and reload, NotMines can merge newly added default keys into those YAML files so updates can add fresh options without wiping server-specific settings.
+
+## Leaderboard
+
+`/minestop` opens a dedicated mines leaderboard GUI for players.
+
+- It uses player-head entries with stat-aware lore for each ranked player
+- A hopper filter cycles between tracked stats like profit, wagered, paid out, wins, win rate, and tiles cleared
+- Pagination supports larger boards without cramming every result into one screen
+- The menu includes a personal summary head so players can see their own rank for the active filter
+- `/mtop` is available as a shorthand alias
 
 ## PlaceholderAPI
 
@@ -130,6 +146,20 @@ The default config is small on purpose.
 - `gameplay.house-edge` controls the edge applied to payouts
 - `announcements.min-multiplier` decides when a win gets broadcast globally
 - `stats.save-interval-seconds` controls how often pending stats are flushed
+- `gui.yml` contains both the board layout and the sound theme used by the GUI
+- New default keys in `config.yml`, `messages.yml`, and `gui.yml` can be merged into existing files automatically during startup or reload
+
+### GUI sound config
+
+The `sounds` section in `plugins/NotMines/gui.yml` controls the feel of the board.
+
+- `sounds.enabled` toggles GUI sounds on or off
+- `board-open`, `safe-pick`, `mine-hit`, `cashout`, and `board-cleared` each accept one or more layered sound entries
+- Each sound entry supports a `sound` field using a Bukkit/Paper `Sound` enum name
+- Each sound entry supports `volume`, `pitch`, and optional `delay-ticks` values
+- Safe picks slightly increase pitch as a streak grows, so repeated successful clicks feel more rewarding by default
+
+If you want a different vibe, you can swap the sound names and retune the volume and pitch without rebuilding the plugin.
 
 Player stats are stored in:
 
