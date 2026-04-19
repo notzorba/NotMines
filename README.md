@@ -37,6 +37,7 @@ It is built against the Paper `1.20.6` API for broad compatibility, and is inten
 - Merges new bundled YAML keys into existing files without overwriting server-specific values
 - Reveals the mine locations after a loss or cashout
 - Uses `SecureRandom` for mine placement
+- Registers anonymous bStats usage metrics
 
 ## Commands
 
@@ -92,6 +93,25 @@ Main files:
 If Vault or an economy plugin is missing, the plugin disables itself on startup instead of half-working.
 
 On startup and reload, NotMines can merge newly added default keys into those YAML files so updates can add fresh options without wiping server-specific settings.
+
+## bStats
+
+NotMines registers with bStats using plugin ID `30856`.
+
+No plugin-specific NotMines config is required for that registration.
+
+Server owners can still opt out globally through the shared `plugins/bStats/config.yml` file that bStats uses.
+
+When enabled, NotMines reports standard bStats platform data plus a few plugin-specific charts:
+
+- `economy_provider`
+- `placeholderapi_enabled`
+- `announcements_enabled`
+- `house_edge_bucket`
+
+The metrics hook is initialized during startup, refreshed on `/mines reload`, and shut down cleanly when the plugin disables.
+
+The vendored bStats source and its MIT notice are documented in `THIRD_PARTY_NOTICES.md`.
 
 ## Leaderboard
 

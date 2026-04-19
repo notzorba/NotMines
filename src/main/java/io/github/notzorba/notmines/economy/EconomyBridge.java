@@ -69,6 +69,20 @@ public final class EconomyBridge {
         return this.economy.format(Money.toMajor(amountMinor, this.currencyScale));
     }
 
+    public String providerName() {
+        if (this.economy == null) {
+            return "unknown";
+        }
+
+        final String providerName = this.economy.getName();
+        if (providerName != null && !providerName.isBlank()) {
+            return providerName;
+        }
+
+        final String className = this.economy.getClass().getSimpleName();
+        return className.isBlank() ? this.economy.getClass().getName() : className;
+    }
+
     private EconomyResult wrap(final EconomyResponse response) {
         if (response == null) {
             return new EconomyResult(false, "No response was returned by the economy provider.");

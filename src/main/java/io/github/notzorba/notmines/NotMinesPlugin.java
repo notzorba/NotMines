@@ -1,5 +1,7 @@
 package io.github.notzorba.notmines;
 
+import io.github.notzorba.notmines.bstats.bukkit.Metrics;
+import io.github.notzorba.notmines.bstats.charts.SimplePie;
 import io.github.notzorba.notmines.command.MinesCommand;
 import io.github.notzorba.notmines.command.MinesTopCommand;
 import io.github.notzorba.notmines.config.PluginSettings;
@@ -18,6 +20,8 @@ import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class NotMinesPlugin extends JavaPlugin {
+    private static final int BSTATS_PLUGIN_ID = 30856;
+
     private PluginSettings settings;
     private MessageService messages;
     private EconomyBridge economyBridge;
@@ -27,6 +31,7 @@ public final class NotMinesPlugin extends JavaPlugin {
     private LeaderboardManager leaderboardManager;
     private MinesCommand minesCommand;
     private MinesTopCommand minesTopCommand;
+    private Metrics metrics;
 
     @Override
     public void onEnable() {
@@ -56,12 +61,18 @@ public final class NotMinesPlugin extends JavaPlugin {
         this.getServer().getPluginManager().registerEvents(new MinesListener(this.gameManager, this.leaderboardManager), this);
         this.statsService.initialize();
         this.registerPlaceholders();
+        this.configureMetrics();
 
         this.getLogger().info("NotMines enabled with async stats persistence and Vault economy support.");
     }
 
     @Override
     public void onDisable() {
+        if (this.metrics != null) {
+            this.metrics.shutdown();
+            this.metrics = null;
+        }
+
         if (this.gameManager != null) {
             this.gameManager.shutdown();
         }
@@ -137,6 +148,44 @@ public final class NotMinesPlugin extends JavaPlugin {
         this.getLogger().info("Registered PlaceholderAPI placeholders for NotMines stats.");
     }
 
+    private void configureMetrics() {
+        if (this.metrics != null) {
+            this.metrics.shutdown();
+            this.metrics = null;
+        }
+
+        final Metrics metrics = new Metrics(this, BSTATS_PLUGIN_ID);
+        metrics.addCustomChart(new SimplePie("economy_provider", this.economyBridge::providerName));
+        metrics.addCustomChart(new SimplePie(
+            "placeholderapi_enabled",
+            () -> this.getServer().getPluginManager().isPluginEnabled("PlaceholderAPI") ? "enabled" : "disabled"
+        ));
+        metrics.addCustomChart(new SimplePie(
+            "announcements_enabled",
+            () -> this.settings.announcementEnabled() ? "enabled" : "disabled"
+        ));
+        metrics.addCustomChart(new SimplePie("house_edge_bucket", () -> describeHouseEdgeBucket(this.settings.houseEdge())));
+        this.metrics = metrics;
+        this.getLogger().info("Initialized bStats metrics with plugin id " + BSTATS_PLUGIN_ID + ".");
+    }
+
+    private static String describeHouseEdgeBucket(final double houseEdge) {
+        final double percentage = houseEdge * 100.0D;
+        if (percentage < 1.0D) {
+            return "0-1%";
+        }
+        if (percentage < 2.0D) {
+            return "1-2%";
+        }
+        if (percentage < 3.0D) {
+            return "2-3%";
+        }
+        if (percentage < 5.0D) {
+            return "3-5%";
+        }
+        return "5%+";
+    }
+
     public void reloadRuntimeResources() {
         this.syncBundledYamlResources();
 
@@ -147,6 +196,7 @@ public final class NotMinesPlugin extends JavaPlugin {
         this.messages = reloadedMessages;
         this.guiConfig = reloadedGuiConfig;
         this.settings = reloadedSettings;
+        this.configureMetrics();
 
         if (this.gameManager != null) {
             this.gameManager.reloadRuntimeResources(this.messages, this.guiConfig, this.settings);
