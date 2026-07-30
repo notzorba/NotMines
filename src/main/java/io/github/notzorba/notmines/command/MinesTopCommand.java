@@ -18,7 +18,7 @@ public final class MinesTopCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(final CommandSender sender, final Command command, final String label, final String[] args) {
-        if (!sender.hasPermission("notmines.use")) {
+        if (!sender.hasPermission("nmines.use")) {
             this.plugin.messages().send(sender, "general.no-permission");
             return true;
         }

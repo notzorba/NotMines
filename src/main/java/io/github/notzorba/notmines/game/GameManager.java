@@ -179,12 +179,14 @@ public final class GameManager {
         if (!boardCleared) {
             this.playSafePickSound(player, session);
         }
-        this.messages.send(
-            player,
-            "game.hit-safe",
-            Placeholder.unparsed("multiplier", Money.formatMultiplier(session.currentMultiplier(this.payoutTable))),
-            Placeholder.unparsed("payout", this.economy.format(session.currentPayoutMinor(this.payoutTable)))
-        );
+        if (this.settings().safePickMessages()) {
+            this.messages.send(
+                player,
+                "game.hit-safe",
+                Placeholder.unparsed("multiplier", Money.formatMultiplier(session.currentMultiplier(this.payoutTable))),
+                Placeholder.unparsed("payout", this.economy.format(session.currentPayoutMinor(this.payoutTable)))
+            );
+        }
 
         if (boardCleared) {
             this.trySettleCashout(player, session, false, true);
@@ -202,7 +204,7 @@ public final class GameManager {
             return;
         }
 
-        if (!session.isSettled()) {
+        if (!session.isSettled() && this.settings().boardCloseMessages()) {
             this.messages.send(player, "general.board-closed");
         }
     }
@@ -415,7 +417,9 @@ public final class GameManager {
 
     private void announceBigWin(final MinesSession session, final long payoutMinor, final double multiplier) {
         final PluginSettings settings = this.settings();
-        if (!settings.announcementEnabled() || multiplier < settings.announcementMinMultiplier()) {
+        if (!settings.announcementEnabled()
+            || multiplier < settings.announcementMinMultiplier()
+            || payoutMinor < settings.announcementMinPayoutMinor()) {
             return;
         }
 
@@ -428,7 +432,9 @@ public final class GameManager {
         );
 
         this.plugin.getServer().getOnlinePlayers().forEach(player -> player.sendMessage(announcement));
-        this.plugin.getServer().getConsoleSender().sendMessage(announcement);
+        if (settings.announcementConsoleEnabled()) {
+            this.plugin.getServer().getConsoleSender().sendMessage(announcement);
+        }
     }
 
     private PluginSettings settings() {

@@ -32,15 +32,15 @@ public final class NotMinesPlugin extends JavaPlugin {
     private MinesCommand minesCommand;
     private MinesTopCommand minesTopCommand;
     private Metrics metrics;
+    private boolean placeholdersRegistered;
 
     @Override
     public void onEnable() {
-        this.syncBundledYamlResources();
-
         try {
+            this.syncBundledYamlResources();
             this.messages = this.loadMessages();
             this.guiConfig = this.loadGuiConfig();
-        } catch (final IllegalArgumentException exception) {
+        } catch (final IllegalArgumentException | IllegalStateException exception) {
             this.getLogger().severe("Failed to load NotMines resources: " + exception.getMessage());
             this.getServer().getPluginManager().disablePlugin(this);
             return;
@@ -52,7 +52,13 @@ public final class NotMinesPlugin extends JavaPlugin {
             return;
         }
 
-        this.reloadSettings();
+        try {
+            this.reloadSettings();
+        } catch (final IllegalArgumentException exception) {
+            this.getLogger().severe("Failed to load config.yml: " + exception.getMessage());
+            this.getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
         this.statsService = new StatsService(this, this.settings);
         this.gameManager = new GameManager(this, this.settings, this.messages, this.guiConfig, this.economyBridge, this.statsService);
         this.leaderboardManager = new LeaderboardManager(this, this.statsService, this.messages, this.guiConfig, this.economyBridge);
@@ -63,7 +69,7 @@ public final class NotMinesPlugin extends JavaPlugin {
         this.registerPlaceholders();
         this.configureMetrics();
 
-        this.getLogger().info("NotMines enabled with async stats persistence and Vault economy support.");
+        StartupPresentation.log(this);
     }
 
     @Override
@@ -135,6 +141,7 @@ public final class NotMinesPlugin extends JavaPlugin {
     }
 
     private void registerPlaceholders() {
+        this.placeholdersRegistered = false;
         if (!this.getServer().getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             return;
         }
@@ -145,6 +152,7 @@ public final class NotMinesPlugin extends JavaPlugin {
             return;
         }
 
+        this.placeholdersRegistered = true;
         this.getLogger().info("Registered PlaceholderAPI placeholders for NotMines stats.");
     }
 
@@ -152,6 +160,10 @@ public final class NotMinesPlugin extends JavaPlugin {
         if (this.metrics != null) {
             this.metrics.shutdown();
             this.metrics = null;
+        }
+
+        if (!this.settings.metricsEnabled()) {
+            return;
         }
 
         final Metrics metrics = new Metrics(this, BSTATS_PLUGIN_ID);
@@ -232,8 +244,27 @@ public final class NotMinesPlugin extends JavaPlugin {
     }
 
     private void syncBundledYaml(final String resourcePath) {
-        if (YamlResourceUpdater.sync(this, resourcePath)) {
+        final YamlResourceUpdater.SyncResult result = YamlResourceUpdater.sync(this, resourcePath);
+        if (result.newerThanBundled()) {
+            this.getLogger().warning(
+                resourcePath + " uses config version " + result.previousVersion()
+                    + ", newer than the bundled version " + result.bundledVersion() + "."
+            );
+        } else if (result.migrated()) {
+            this.getLogger().info(
+                "Updated " + resourcePath + " from config version " + result.previousVersion()
+                    + " to " + result.bundledVersion() + "; custom values were preserved."
+            );
+        } else if (result.changed()) {
             this.getLogger().info("Merged new defaults into " + resourcePath + ".");
         }
+    }
+
+    boolean placeholdersRegistered() {
+        return this.placeholdersRegistered;
+    }
+
+    boolean metricsEnabled() {
+        return this.metrics != null;
     }
 }

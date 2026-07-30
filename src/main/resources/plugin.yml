@@ -4,7 +4,7 @@ main: io.github.notzorba.notmines.NotMinesPlugin
 description: High-performance mines gambling plugin with Vault economy support.
 author: NotZorba
 website: https://github.com/notzorba
-api-version: '1.20.5'
+api-version: '1.20'
 prefix: NotMines
 softdepend: [Vault, PlaceholderAPI]
 load: POSTWORLD
@@ -14,20 +14,20 @@ commands:
     description: Start or manage a mines game.
     usage: /mines <bet> <mines> or /mines <subcommand>
     aliases: [minegame]
-    permission: notmines.use
+    permission: nmines.use
   minestop:
     description: Open the mines stats leaderboard.
     usage: /minestop
     aliases: [mtop]
-    permission: notmines.use
+    permission: nmines.use
 
 permissions:
-  notmines.use:
+  nmines.use:
     description: Allows a player to use mines games and view their own stats.
     default: true
-  notmines.stats.others:
+  nmines.stats.others:
     description: Allows viewing mines stats for other players.
     default: op
-  notmines.admin:
+  nmines.admin:
     description: Allows viewing and updating NotMines limits in game.
     default: op

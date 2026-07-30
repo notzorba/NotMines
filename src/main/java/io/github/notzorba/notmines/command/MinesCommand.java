@@ -19,7 +19,7 @@ import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
 public final class MinesCommand implements CommandExecutor, TabCompleter {
-    private static final String ADMIN_PERMISSION = "notmines.admin";
+    private static final String ADMIN_PERMISSION = "nmines.admin";
 
     private final NotMinesPlugin plugin;
     private final GameManager gameManager;
@@ -40,7 +40,7 @@ public final class MinesCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public boolean onCommand(final CommandSender sender, final Command command, final String label, final String[] args) {
-        if (!sender.hasPermission("notmines.use")) {
+        if (!sender.hasPermission("nmines.use")) {
             this.messages.send(sender, "general.no-permission");
             return true;
         }
@@ -109,7 +109,7 @@ public final class MinesCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        if (!sender.hasPermission("notmines.stats.others")) {
+        if (!sender.hasPermission("nmines.stats.others")) {
             this.messages.send(sender, "general.no-permission");
             return;
         }
@@ -234,7 +234,7 @@ public final class MinesCommand implements CommandExecutor, TabCompleter {
         try {
             this.plugin.reloadRuntimeResources();
             this.messages.send(sender, "command.reload-success");
-        } catch (final IllegalArgumentException exception) {
+        } catch (final IllegalArgumentException | IllegalStateException exception) {
             this.messages.send(sender, "command.reload-failed", Placeholder.unparsed("reason", exception.getMessage()));
         }
     }

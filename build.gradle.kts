@@ -7,6 +7,11 @@ plugins {
 
 val releaseVersion = providers.gradleProperty("releaseVersion")
     .orElse(providers.environmentVariable("RELEASE_VERSION"))
+val paperApiVersion = providers.gradleProperty("paperApiVersion")
+    .orElse("1.20.1-R0.1-SNAPSHOT")
+val targetJavaVersion = providers.gradleProperty("targetJavaVersion")
+    .map(String::toInt)
+    .orElse(17)
 
 group = "io.github.notzorba"
 version = releaseVersion.getOrElse("dev-SNAPSHOT")
@@ -31,7 +36,10 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.20.6-R0.1-SNAPSHOT")
+    // Compile against the oldest supported Paper API so newer-only calls cannot
+    // accidentally enter the release jar. Paper keeps this API compatible on
+    // newer servers, including the year-based 26.x releases.
+    compileOnly("io.papermc.paper:paper-api:${paperApiVersion.get()}")
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
     compileOnly("me.clip:placeholderapi:2.11.7")
 
@@ -39,17 +47,18 @@ dependencies {
 
     testImplementation(platform("org.junit:junit-bom:5.13.4"))
     testImplementation("org.junit.jupiter:junit-jupiter")
+    testImplementation("io.papermc.paper:paper-api:${paperApiVersion.get()}")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(21))
+    toolchain.languageVersion.set(JavaLanguageVersion.of(targetJavaVersion.get()))
     withSourcesJar()
 }
 
 tasks.withType<JavaCompile>().configureEach {
     options.encoding = "UTF-8"
-    options.release.set(21)
+    options.release.set(targetJavaVersion.get())
 }
 
 tasks.processResources {

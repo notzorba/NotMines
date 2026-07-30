@@ -12,7 +12,11 @@ public record GuiSoundConfig(
     List<GuiSoundEffect> safePick,
     List<GuiSoundEffect> mineHit,
     List<GuiSoundEffect> cashout,
-    List<GuiSoundEffect> boardCleared
+    List<GuiSoundEffect> boardCleared,
+    List<GuiSoundEffect> leaderboardOpen,
+    List<GuiSoundEffect> leaderboardPage,
+    List<GuiSoundEffect> leaderboardFilter,
+    List<GuiSoundEffect> menuClose
 ) {
     public static GuiSoundConfig load(final YamlConfiguration config) {
         return new GuiSoundConfig(
@@ -21,7 +25,11 @@ public record GuiSoundConfig(
             loadSequence(config, "sounds.safe-pick", defaultSafePick()),
             loadSequence(config, "sounds.mine-hit", defaultMineHit()),
             loadSequence(config, "sounds.cashout", defaultCashout()),
-            loadSequence(config, "sounds.board-cleared", defaultBoardCleared())
+            loadSequence(config, "sounds.board-cleared", defaultBoardCleared()),
+            loadSequence(config, "sounds.leaderboard-open", defaultLeaderboardOpen()),
+            loadSequence(config, "sounds.leaderboard-page", defaultLeaderboardPage()),
+            loadSequence(config, "sounds.leaderboard-filter", defaultLeaderboardFilter()),
+            loadSequence(config, "sounds.menu-close", defaultMenuClose())
         );
     }
 
@@ -52,36 +60,58 @@ public record GuiSoundConfig(
 
     private static List<GuiSoundEffect> defaultBoardOpen() {
         return List.of(
-            new GuiSoundEffect(org.bukkit.Sound.UI_BUTTON_CLICK, 0.65F, 1.10F, 0),
-            new GuiSoundEffect(org.bukkit.Sound.ITEM_BOOK_PAGE_TURN, 0.50F, 1.25F, 0)
+            new GuiSoundEffect("minecraft:ui.button.click", 0.65F, 1.10F, 0),
+            new GuiSoundEffect("minecraft:item.book.page_turn", 0.50F, 1.25F, 0)
         );
     }
 
     private static List<GuiSoundEffect> defaultSafePick() {
         return List.of(
-            new GuiSoundEffect(org.bukkit.Sound.BLOCK_NOTE_BLOCK_CHIME, 0.60F, 1.30F, 0),
-            new GuiSoundEffect(org.bukkit.Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.40F, 1.70F, 1)
+            new GuiSoundEffect("minecraft:block.note_block.chime", 0.60F, 1.30F, 0),
+            new GuiSoundEffect("minecraft:entity.experience_orb.pickup", 0.40F, 1.70F, 1)
         );
     }
 
     private static List<GuiSoundEffect> defaultMineHit() {
         return List.of(
-            new GuiSoundEffect(org.bukkit.Sound.ENTITY_GENERIC_EXPLODE, 0.95F, 0.75F, 0),
-            new GuiSoundEffect(org.bukkit.Sound.BLOCK_GLASS_BREAK, 0.60F, 0.60F, 1)
+            new GuiSoundEffect("minecraft:entity.generic.explode", 0.95F, 0.75F, 0),
+            new GuiSoundEffect("minecraft:block.glass.break", 0.60F, 0.60F, 1)
         );
     }
 
     private static List<GuiSoundEffect> defaultCashout() {
         return List.of(
-            new GuiSoundEffect(org.bukkit.Sound.ENTITY_PLAYER_LEVELUP, 0.75F, 1.20F, 0),
-            new GuiSoundEffect(org.bukkit.Sound.BLOCK_NOTE_BLOCK_PLING, 0.55F, 1.55F, 1)
+            new GuiSoundEffect("minecraft:entity.player.levelup", 0.75F, 1.20F, 0),
+            new GuiSoundEffect("minecraft:block.note_block.pling", 0.55F, 1.55F, 1)
         );
     }
 
     private static List<GuiSoundEffect> defaultBoardCleared() {
         return List.of(
-            new GuiSoundEffect(org.bukkit.Sound.UI_TOAST_CHALLENGE_COMPLETE, 0.90F, 1.05F, 0),
-            new GuiSoundEffect(org.bukkit.Sound.ENTITY_PLAYER_LEVELUP, 0.80F, 1.45F, 2)
+            new GuiSoundEffect("minecraft:ui.toast.challenge_complete", 0.90F, 1.05F, 0),
+            new GuiSoundEffect("minecraft:entity.player.levelup", 0.80F, 1.45F, 2)
         );
+    }
+
+    private static List<GuiSoundEffect> defaultLeaderboardOpen() {
+        return List.of(
+            new GuiSoundEffect("minecraft:item.book.page_turn", 0.55F, 1.15F, 0),
+            new GuiSoundEffect("minecraft:block.note_block.chime", 0.35F, 1.45F, 1)
+        );
+    }
+
+    private static List<GuiSoundEffect> defaultLeaderboardPage() {
+        return List.of(new GuiSoundEffect("minecraft:item.book.page_turn", 0.60F, 1.20F, 0));
+    }
+
+    private static List<GuiSoundEffect> defaultLeaderboardFilter() {
+        return List.of(
+            new GuiSoundEffect("minecraft:ui.button.click", 0.55F, 1.20F, 0),
+            new GuiSoundEffect("minecraft:block.note_block.hat", 0.35F, 1.65F, 1)
+        );
+    }
+
+    private static List<GuiSoundEffect> defaultMenuClose() {
+        return List.of(new GuiSoundEffect("minecraft:ui.button.click", 0.45F, 0.90F, 0));
     }
 }

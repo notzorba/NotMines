@@ -103,8 +103,10 @@ public final class LeaderboardMenu {
         final MessageService messages,
         final LeaderboardInventoryHolder holder
     ) {
-        final Component title = messages.renderRaw("<#F4C95D><bold><player></bold></#F4C95D>", placeholder("player", holder.viewerName()));
+        final Component title = messages.renderRaw("<#FFD166><bold><player></bold></#FFD166>", placeholder("player", holder.viewerName()));
         final List<Component> lore = List.of(
+            messages.renderRaw("<dark_gray>Your Ranking"),
+            Component.empty(),
             messages.renderRaw("<gray>Loading your placement...</gray>"),
             messages.renderRaw("<dark_gray>The selected filter will update your rank and value.</dark_gray>")
         );
@@ -124,30 +126,34 @@ public final class LeaderboardMenu {
         final LeaderboardPage page,
         final EconomyBridge economy
     ) {
-        final String titlePattern = "<#F4C95D><bold><player></bold></#F4C95D>";
+        final String titlePattern = "<#FFD166><bold><player></bold></#FFD166>";
         final Component title = messages.renderRaw(titlePattern, placeholder("player", holder.viewerName()));
 
         final PlayerStatsSnapshot viewerSnapshot = page.viewerSnapshot();
         final boolean ranked = viewerSnapshot != null && viewerSnapshot.hasActivity() && page.viewerRank() > 0;
         final List<Component> lore = ranked
             ? List.of(
-                messages.renderRaw("<gray>Current filter:</gray> <white><stat></white>", placeholder("stat", page.stat().displayName())),
+                messages.renderRaw("<dark_gray>Your Ranking"),
+                Component.empty(),
+                messages.renderRaw("<gray>Current filter: <white><stat></white>", placeholder("stat", page.stat().displayName())),
                 messages.renderRaw(
-                    "<gray>Your rank:</gray> <white>#<rank></white> <dark_gray>/</dark_gray> <white><players></white>",
+                    "<gray>Your rank: <#7DFFA8>#<rank></#7DFFA8> <dark_gray>/</dark_gray> <white><players></white>",
                     placeholder("rank", Integer.toString(page.viewerRank())),
                     placeholder("players", Integer.toString(page.totalEntries()))
                 ),
                 messages.renderRaw(
-                    "<gray><stat>:</gray> <white><value></white>",
+                    "<gray><stat>: <white><value></white>",
                     placeholder("stat", page.stat().displayName()),
                     placeholder("value", formatValue(page.stat(), viewerSnapshot, economy))
                 ),
                 messages.renderRaw("<dark_gray>This updates with the active hopper filter.</dark_gray>")
             )
             : List.of(
-                messages.renderRaw("<gray>Current filter:</gray> <white><stat></white>", placeholder("stat", page.stat().displayName())),
-                messages.renderRaw("<gray>Your rank:</gray> <white>Unranked</white>"),
-                messages.renderRaw("<gray><stat>:</gray> <white>No data yet</white>", placeholder("stat", page.stat().displayName())),
+                messages.renderRaw("<dark_gray>Your Ranking"),
+                Component.empty(),
+                messages.renderRaw("<gray>Current filter: <white><stat></white>", placeholder("stat", page.stat().displayName())),
+                messages.renderRaw("<gray>Your rank: <#FFB347>Unranked</#FFB347>"),
+                messages.renderRaw("<gray><stat>: <white>No data yet</white>", placeholder("stat", page.stat().displayName())),
                 messages.renderRaw("<dark_gray>Play a few rounds to appear on the board.</dark_gray>")
             );
 

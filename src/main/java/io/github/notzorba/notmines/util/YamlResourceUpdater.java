@@ -11,28 +11,40 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class YamlResourceUpdater {
+    private static final String VERSION_PATH = "config-version";
+
     private YamlResourceUpdater() {
     }
 
-    public static boolean sync(final JavaPlugin plugin, final String resourcePath) {
+    public static SyncResult sync(final JavaPlugin plugin, final String resourcePath) {
         final File file = new File(plugin.getDataFolder(), resourcePath);
+        final YamlConfiguration bundledConfig = loadBundled(plugin, resourcePath);
+        final int bundledVersion = bundledConfig.getInt(VERSION_PATH, 0);
+        if (bundledVersion < 1) {
+            throw new IllegalStateException("Bundled resource " + resourcePath + " has no valid config-version.");
+        }
+
         if (!file.exists()) {
             plugin.saveResource(resourcePath, false);
-            return true;
+            return new SyncResult(true, true, bundledVersion, bundledVersion);
         }
 
         final YamlConfiguration liveConfig = loadFile(file);
-        final YamlConfiguration bundledConfig = loadBundled(plugin, resourcePath);
+        final int previousVersion = Math.max(0, liveConfig.getInt(VERSION_PATH, 0));
 
         boolean changed = mergeRootComments(liveConfig, bundledConfig);
         changed |= mergeSection(liveConfig, bundledConfig, bundledConfig, "");
+        if (previousVersion < bundledVersion) {
+            liveConfig.set(VERSION_PATH, bundledVersion);
+            changed = true;
+        }
         if (!changed) {
-            return false;
+            return new SyncResult(false, false, previousVersion, bundledVersion);
         }
 
         try {
             liveConfig.save(file);
-            return true;
+            return new SyncResult(true, false, previousVersion, bundledVersion);
         } catch (final IOException exception) {
             throw new IllegalStateException("Failed to save merged YAML resource " + resourcePath + ".", exception);
         }
@@ -130,5 +142,15 @@ public final class YamlResourceUpdater {
             changed = true;
         }
         return changed;
+    }
+
+    public record SyncResult(boolean changed, boolean created, int previousVersion, int bundledVersion) {
+        public boolean migrated() {
+            return !this.created && this.previousVersion < this.bundledVersion;
+        }
+
+        public boolean newerThanBundled() {
+            return this.previousVersion > this.bundledVersion;
+        }
     }
 }

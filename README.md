@@ -1,12 +1,12 @@
 <div align="center">
 
-# Mines
+# NotMines
 
 Simple, server-side Mines for Paper with Vault economy support.
 
 [![GitHub](https://img.shields.io/badge/GitHub-NotMines-181717?style=for-the-badge&logo=github)](https://github.com/notzorba/NotMines)
-[![Paper API](https://img.shields.io/badge/Paper%20API-1.20.6-white?style=for-the-badge&logo=papermc&logoColor=black)](https://papermc.io/)
-[![Java](https://img.shields.io/badge/Java-21-orange?style=for-the-badge&logo=openjdk&logoColor=white)](https://adoptium.net/)
+[![Paper](https://img.shields.io/badge/Paper-1.20.x--26.x-white?style=for-the-badge&logo=papermc&logoColor=black)](https://papermc.io/)
+[![Java](https://img.shields.io/badge/Bytecode-Java%2017-orange?style=for-the-badge&logo=openjdk&logoColor=white)](https://adoptium.net/)
 [![Vault](https://img.shields.io/badge/Vault-Required-4caf50?style=for-the-badge)](https://www.spigotmc.org/resources/vault.34315/)
 [![License](https://img.shields.io/github/license/notzorba/NotMines?style=for-the-badge)](https://github.com/notzorba/NotMines/blob/main/LICENSE)
 
@@ -20,7 +20,7 @@ The goal with this project is pretty simple: make Mines feel good in game. The b
 
 It is meant to be easy to drop into a server, easy to configure, and not annoying to maintain.
 
-It is built against the Paper `1.20.6` API for broad compatibility, and is intended to run on current stable Paper releases as well.
+It is compiled against Paper `1.20.1` with Java 17 bytecode and declares the `1.20` API baseline. That keeps the jar loadable across Paper `1.20.x` through the current year-based `26.x` releases without version-specific server internals.
 
 ## What It Does
 
@@ -30,11 +30,12 @@ It is built against the Paper `1.20.6` API for broad compatibility, and is inten
 - Lets admins change live limits in game
 - Reloads `config.yml`, `messages.yml`, and `gui.yml` with `/mines reload`
 - Includes a `/minestop` leaderboard GUI with player-head entries, stat filters, and pagination
-- Plays configurable GUI sound cues for board open, safe picks, mine hits, cashouts, and full-board clears
-- Announces big wins globally when they pass a configurable multiplier
+- Plays configurable layered sound cues for games and leaderboard navigation
+- Announces big wins when they pass configurable multiplier and payout thresholds
 - Saves player stats to SQLite
 - Keeps a small pending stats journal so reloads and unloads are less likely to lose progress
-- Merges new bundled YAML keys into existing files without overwriting server-specific values
+- Versions and non-destructively updates all three YAML files without overwriting server-specific values
+- Prints a concise startup banner with version, author, server, economy, storage, and integration status
 - Reveals the mine locations after a loss or cashout
 - Uses `SecureRandom` for mine placement
 - Registers anonymous bStats usage metrics
@@ -63,16 +64,20 @@ Examples:
 
 | Permission | Use |
 | --- | --- |
-| `notmines.use` | Start games, cash out, reopen, and view your own stats |
-| `notmines.stats.others` | View another player's stats |
-| `notmines.admin` | Change limits and reload the plugin |
+| `nmines.use` | Start games, cash out, reopen, and view your own stats |
+| `nmines.stats.others` | View another player's stats |
+| `nmines.admin` | Change limits and reload the plugin |
+
+### Upgrading public identifiers
+
+Current builds use the shorter `nmines` namespace. When upgrading from an older build, update permission assignments from `notmines.*` to `nmines.*` and PlaceholderAPI entries from `%notmines_*%` to `%nmines_*%`. Player stats and customized YAML values are not renamed or reset.
 
 ## Setup
 
 You will need:
 
-- Java 21
-- Paper
+- Paper `1.20.x` through `26.x`
+- The Java version required by that Paper release (the plugin itself uses Java 17 bytecode)
 - [Vault](https://www.spigotmc.org/resources/vault.34315/)
 - Any Vault-compatible economy plugin
 
@@ -80,7 +85,7 @@ Optional:
 
 - [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/) for stats placeholders and leaderboard integrations
 
-This repo is currently built against the Paper `1.20.6` API, so that is the baseline target to test against first rather than a claim that only one exact version works. In practice, the goal is compatibility with modern stable Paper versions, not just `1.20.6`.
+The project intentionally compiles against the oldest supported API (`1.20.1`). Paper servers older than the `api-version` declared by a plugin refuse to load it, so `plugin.yml` declares `1.20` instead of a newer point release.
 
 Drop the jar into `plugins/`, start the server once, and the plugin will generate its files.
 
@@ -92,13 +97,13 @@ Main files:
 
 If Vault or an economy plugin is missing, the plugin disables itself on startup instead of half-working.
 
-On startup and reload, NotMines can merge newly added default keys into those YAML files so updates can add fresh options without wiping server-specific settings.
+On startup and reload, NotMines compares each file's `config-version`, adds missing defaults and comments, and advances old versions without replacing customized values.
 
 ## bStats
 
 NotMines registers with bStats using plugin ID `30856`.
 
-No plugin-specific NotMines config is required for that registration.
+Set `metrics.enabled: false` in `config.yml` to disable the NotMines metrics hook.
 
 Server owners can still opt out globally through the shared `plugins/bStats/config.yml` file that bStats uses.
 
@@ -125,57 +130,59 @@ The vendored bStats source and its MIT notice are documented in `THIRD_PARTY_NOT
 
 ## PlaceholderAPI
 
-If PlaceholderAPI is installed, NotMines registers the `%notmines_...%` placeholder set automatically.
+If PlaceholderAPI is installed, NotMines registers the shorter `%nmines_...%` placeholder set automatically.
 
 Player stat placeholders:
 
-- `%notmines_games%`
-- `%notmines_wins%`
-- `%notmines_losses%`
-- `%notmines_tiles_cleared%`
-- `%notmines_win_rate%`
-- `%notmines_total_wagered%`
-- `%notmines_total_paid%`
-- `%notmines_profit%`
-- `%notmines_best_cashout%`
-- `%notmines_biggest_bet%`
+- `%nmines_games%`
+- `%nmines_wins%`
+- `%nmines_losses%`
+- `%nmines_tiles_cleared%`
+- `%nmines_win_rate%`
+- `%nmines_total_wagered%`
+- `%nmines_total_paid%`
+- `%nmines_profit%`
+- `%nmines_best_cashout%`
+- `%nmines_biggest_bet%`
 
 For leaderboard plugins such as Topper, use the raw numeric variants for money values so sorting stays numeric instead of lexicographic:
 
-- `%notmines_total_wagered_raw%`
-- `%notmines_total_paid_raw%`
-- `%notmines_profit_raw%`
-- `%notmines_best_cashout_raw%`
-- `%notmines_biggest_bet_raw%`
+- `%nmines_total_wagered_raw%`
+- `%nmines_total_paid_raw%`
+- `%nmines_profit_raw%`
+- `%nmines_best_cashout_raw%`
+- `%nmines_biggest_bet_raw%`
 
 If you want integer minor-unit values instead, these are also available:
 
-- `%notmines_total_wagered_minor%`
-- `%notmines_total_paid_minor%`
-- `%notmines_profit_minor%`
-- `%notmines_best_cashout_minor%`
-- `%notmines_biggest_bet_minor%`
+- `%nmines_total_wagered_minor%`
+- `%nmines_total_paid_minor%`
+- `%nmines_profit_minor%`
+- `%nmines_best_cashout_minor%`
+- `%nmines_biggest_bet_minor%`
 
 The placeholder expansion uses the in-memory stats cache and only schedules background cache fills when needed, so it does not perform synchronous database queries on the server thread.
 
 ## Config Notes
 
-The default config is small on purpose.
+The defaults are documented in place. Important options include:
 
+- `metrics.enabled` controls the plugin's bStats hook
 - `limits.min-bet` and `limits.max-bet` accept values like `100`, `1k`, `1m`, or `2b`
 - `gameplay.house-edge` controls the edge applied to payouts
-- `announcements.min-multiplier` decides when a win gets broadcast globally
+- `gameplay.safe-pick-messages` and `gameplay.board-close-messages` control chat feedback
+- `announcements.min-multiplier` and `announcements.min-payout` jointly gate big-win broadcasts
 - `stats.save-interval-seconds` controls how often pending stats are flushed
 - `gui.yml` contains both the board layout and the sound theme used by the GUI
-- New default keys in `config.yml`, `messages.yml`, and `gui.yml` can be merged into existing files automatically during startup or reload
+- `config-version` is maintained by the plugin and should not be edited manually
 
 ### GUI sound config
 
 The `sounds` section in `plugins/NotMines/gui.yml` controls the feel of the board.
 
 - `sounds.enabled` toggles GUI sounds on or off
-- `board-open`, `safe-pick`, `mine-hit`, `cashout`, and `board-cleared` each accept one or more layered sound entries
-- Each sound entry supports a `sound` field using a Bukkit/Paper `Sound` enum name
+- Board events plus `leaderboard-open`, `leaderboard-page`, `leaderboard-filter`, and `menu-close` accept layered sound entries
+- Each sound entry supports a Bukkit-style name such as `UI_BUTTON_CLICK`, a namespaced key such as `minecraft:ui.button.click`, or a custom resource-pack sound key
 - Each sound entry supports `volume`, `pitch`, and optional `delay-ticks` values
 - Safe picks slightly increase pitch as a streak grows, so repeated successful clicks feel more rewarding by default
 
@@ -199,6 +206,12 @@ or
 ```
 
 The built jar ends up in `build/libs/`.
+
+The normal build uses the oldest supported API and Java 17 bytecode. Maintainers can also compile the same source against a newer endpoint, for example:
+
+```powershell
+.\gradlew.bat clean test "-PpaperApiVersion=26.2.build.84-stable" "-PtargetJavaVersion=25"
+```
 
 Local builds default to the version `dev-SNAPSHOT`. If you want a versioned local jar, pass the release version explicitly:
 

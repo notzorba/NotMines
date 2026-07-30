@@ -4,6 +4,8 @@ import com.destroystokyo.paper.profile.ProfileProperty;
 import io.github.notzorba.notmines.NotMinesPlugin;
 import io.github.notzorba.notmines.economy.EconomyBridge;
 import io.github.notzorba.notmines.gui.GuiConfig;
+import io.github.notzorba.notmines.gui.GuiSoundEffect;
+import io.github.notzorba.notmines.gui.GuiSoundPlayer;
 import io.github.notzorba.notmines.gui.LeaderboardGuiConfig;
 import io.github.notzorba.notmines.stats.LeaderboardPage;
 import io.github.notzorba.notmines.stats.LeaderboardStat;
@@ -46,6 +48,7 @@ public final class LeaderboardManager {
         );
         final Inventory inventory = LeaderboardMenu.createInventory(holder, this.messages, this.leaderboardGui());
         player.openInventory(inventory);
+        this.playSound(player, this.guiConfig.sounds().leaderboardOpen());
         this.loadPage(holder);
     }
 
@@ -56,6 +59,7 @@ public final class LeaderboardManager {
 
         final var layout = this.leaderboardGui().layout();
         if (rawSlot == layout.closeSlot()) {
+            this.playSound(player, this.guiConfig.sounds().menuClose());
             player.closeInventory();
             return;
         }
@@ -63,18 +67,21 @@ public final class LeaderboardManager {
         if (rawSlot == layout.filterSlot()) {
             holder.setStat(holder.stat().next());
             holder.setPage(0);
+            this.playSound(player, this.guiConfig.sounds().leaderboardFilter());
             this.loadPage(holder);
             return;
         }
 
         if (rawSlot == layout.previousPageSlot()) {
             holder.setPage(holder.page() - 1);
+            this.playSound(player, this.guiConfig.sounds().leaderboardPage());
             this.loadPage(holder);
             return;
         }
 
         if (rawSlot == layout.nextPageSlot()) {
             holder.setPage(holder.page() + 1);
+            this.playSound(player, this.guiConfig.sounds().leaderboardPage());
             this.loadPage(holder);
         }
     }
@@ -118,6 +125,13 @@ public final class LeaderboardManager {
 
     private LeaderboardGuiConfig leaderboardGui() {
         return this.guiConfig.leaderboard();
+    }
+
+    private void playSound(final Player player, final java.util.List<GuiSoundEffect> effects) {
+        if (!this.guiConfig.sounds().enabled() || effects.isEmpty()) {
+            return;
+        }
+        GuiSoundPlayer.play(this.plugin, player, effects);
     }
 
     private ProfileTextures captureProfileTextures(final Player player) {

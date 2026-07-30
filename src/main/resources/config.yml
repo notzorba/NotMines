@@ -1,17 +1,60 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# NotMines configuration
+# Documentation: https://github.com/notzorba/NotMines
+#
+# Money values accept plain numbers and compact suffixes such as 1k, 1.5m,
+# and 2b. Run /mines reload after editing this file.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Used by NotMines to merge new defaults without overwriting customized values.
+# Do not change this manually.
+config-version: 1
+
+metrics:
+  # Send anonymous usage statistics to bStats. The global bStats setting still
+  # takes priority when this is enabled.
+  enabled: true
+
 limits:
+  # Smallest and largest wager accepted by /mines.
   min-bet: "100"
   max-bet: "1m"
+
+  # A Mines board contains 25 tiles, so the supported range is 1-24.
   min-mines: 1
   max-mines: 24
 
 gameplay:
+  # Decimal house edge applied to fair multipliers. 0.03 means 3%.
+  # Values outside 0.00-0.20 are clamped for safety.
   house-edge: 0.03
+
+  # Send the multiplier and payout message after every safe tile.
+  safe-pick-messages: true
+
+  # Remind players how to reopen a board when they close its inventory.
+  board-close-messages: true
+
+  # How long the revealed result remains open after a loss or cashout.
+  # 20 ticks = 1 second. The minimum accepted value is 20.
   end-screen-close-delay-ticks: 50
 
 announcements:
+  # Broadcast qualifying wins to all online players.
   enabled: true
+
+  # Both thresholds must be met. Set min-payout to "0" to use only multiplier.
   min-multiplier: 5.0
+  min-payout: "0"
+
+  # Also show qualifying win broadcasts in the server console.
+  broadcast-to-console: true
 
 stats:
+  # Pending statistics are flushed to SQLite on one background worker.
+  # save-interval-seconds has a minimum of 5 seconds.
   save-interval-seconds: 15
+
+  # Maximum graceful shutdown wait for the final database flush.
+  # The minimum accepted value is 250 milliseconds.
   shutdown-wait-millis: 1500

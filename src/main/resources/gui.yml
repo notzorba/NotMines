@@ -1,7 +1,23 @@
-title: "<dark_gray>Mines | GUI</dark_gray>"
+# ─────────────────────────────────────────────────────────────────────────────
+# NotMines GUI
+#
+# Materials use Bukkit Material names. Sounds accept Bukkit-style names such as
+# UI_BUTTON_CLICK or namespaced keys such as minecraft:ui.button.click. This also
+# allows custom resource-pack sounds. Slots are zero-based and must remain
+# inside the configured inventory size.
+# Run /mines reload after editing this file.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Used for non-destructive default merging. Do not change this manually.
+config-version: 1
+
+title: "<dark_gray>Mines <gray>| <white>Game"
 
 layout:
+  # Chest inventory sizes must be a multiple of 9 between 9 and 54.
   inventory-size: 54
+
+  # Exactly 25 unique slots are required for the 5x5 board.
   board-slots:
     - 2
     - 3
@@ -36,8 +52,11 @@ layout:
   help-slot: 53
 
 sounds:
+  # Master switch for every sound in this file.
   enabled: true
 
+  # Each event accepts one or more layered effects. delay-ticks is optional.
+  # Volume is clamped to 0.0-4.0 and pitch to 0.5-2.0.
   board-open:
     - sound: UI_BUTTON_CLICK
       volume: 0.65
@@ -82,7 +101,36 @@ sounds:
       pitch: 1.45
       delay-ticks: 2
 
+  leaderboard-open:
+    - sound: ITEM_BOOK_PAGE_TURN
+      volume: 0.55
+      pitch: 1.15
+    - sound: BLOCK_NOTE_BLOCK_CHIME
+      volume: 0.35
+      pitch: 1.45
+      delay-ticks: 1
+
+  leaderboard-page:
+    - sound: ITEM_BOOK_PAGE_TURN
+      volume: 0.60
+      pitch: 1.20
+
+  leaderboard-filter:
+    - sound: UI_BUTTON_CLICK
+      volume: 0.55
+      pitch: 1.20
+    - sound: BLOCK_NOTE_BLOCK_HAT
+      volume: 0.35
+      pitch: 1.65
+      delay-ticks: 1
+
+  menu-close:
+    - sound: UI_BUTTON_CLICK
+      volume: 0.45
+      pitch: 0.90
+
 items:
+  # Every item supports material, title, and lore. All text uses MiniMessage.
   filler:
     material: BLACK_STAINED_GLASS_PANE
     title: "<dark_gray> </dark_gray>"
@@ -90,142 +138,167 @@ items:
 
   hidden-tile:
     material: GRAY_STAINED_GLASS_PANE
-    title: "<#8F9FB3>Hidden Tile</#8F9FB3>"
+    title: "<#75C8FF><bold>HIDDEN TILE</bold></#75C8FF>"
     lore:
-      - "<gray>Click to reveal this tile.</gray>"
-      - "<gray>Mines on board:</gray> <white><mines></white>"
-      - "<gray>Safe chance:</gray> <white><chance>%</white>"
+      - "<dark_gray>Mines Board"
+      - ""
+      - "<aqua>Information:"
+      - "<gray>Mines on board: <white><mines></white>"
+      - "<gray>Safe chance: <#7DFFA8><chance>%</#7DFFA8>"
+      - ""
+      - "<gold>▶ <yellow><bold><underlined>CLICK</underlined></bold> <yellow>To Reveal"
 
   safe-tile:
     material: DIAMOND
-    title: "<#53B38C>Safe</#53B38C>"
+    title: "<#7DFFA8><bold>SAFE TILE</bold></#7DFFA8>"
     lore:
-      - "<gray>This tile was safe.</gray>"
-      - "<gray>Safe picks:</gray> <white><picks></white>"
-      - "<gray>Current payout:</gray> <white><payout></white>"
+      - "<dark_gray>Mines Board"
+      - ""
+      - "<gray>Safe picks: <white><picks></white>"
+      - "<gray>Current payout: <#7DFFA8><payout></#7DFFA8>"
 
   unrevealed-safe-tile:
     material: LIGHT_GRAY_STAINED_GLASS_PANE
-    title: "<#A5AFBC>Safe Tile</#A5AFBC>"
+    title: "<#A5AFBC><bold>SAFE TILE</bold></#A5AFBC>"
     lore:
       - "<gray>This was safe, but unrevealed.</gray>"
 
   cashed-out-tile:
     material: YELLOW_STAINED_GLASS_PANE
-    title: "<#D5B25C>Locked In</#D5B25C>"
+    title: "<#FFD166><bold>LOCKED IN</bold></#FFD166>"
     lore:
       - "<gray>You already secured the payout.</gray>"
 
   mine-tile:
     material: TNT
-    title: "<#D96B6B>Mine</#D96B6B>"
+    title: "<#FF5C72><bold>MINE</bold></#FF5C72>"
     lore:
-      - "<#E85D75>This tile contained a mine.</#E85D75>"
+      - "<dark_gray>Mines Board"
+      - ""
+      - "<#FF5C72>This tile contained a mine."
 
   cashout-active:
     material: EMERALD
-    title: "<#53B38C>Cash Out</#53B38C>"
+    title: "<#7DFFA8><bold>CASH OUT</bold></#7DFFA8>"
     lore:
-      - "<gray>Current multiplier:</gray> <white><multiplier>x</white>"
-      - "<gray>Current payout:</gray> <white><payout></white>"
-      - "<gray>Click to secure this amount.</gray>"
-      - "<dark_gray>Predetermined board. No tiles are rolled live.</dark_gray>"
+      - "<dark_gray>Secure Winnings"
+      - ""
+      - "<aqua>Information:"
+      - "<gray>Multiplier: <white><multiplier>x</white>"
+      - "<gray>Payout: <#7DFFA8><payout></#7DFFA8>"
+      - ""
+      - "<gold>▶ <yellow><bold><underlined>CLICK</underlined></bold> <yellow>To Collect"
 
   cashout-disabled:
     material: BARRIER
-    title: "<#C97A7A>Round Ended</#C97A7A>"
+    title: "<#FF5C72><bold>ROUND ENDED</bold></#FF5C72>"
     lore:
       - "<gray>This round has already ended.</gray>"
 
   cashout-collected:
     material: EMERALD
-    title: "<#53B38C>Collected</#53B38C>"
+    title: "<#7DFFA8><bold>COLLECTED</bold></#7DFFA8>"
     lore:
-      - "<gray>Payout:</gray> <white><payout></white>"
+      - "<dark_gray>Round Complete"
+      - ""
+      - "<gray>Payout: <#7DFFA8><payout></#7DFFA8>"
 
   board-info-active:
     material: COMPASS
-    title: "<#7C92B8>Board Status</#7C92B8>"
+    title: "<#75C8FF><bold>BOARD STATUS</bold></#75C8FF>"
     lore:
-      - "<gray>Safe picks:</gray> <white><safe_picks></white>"
-      - "<gray>Remaining safe tiles:</gray> <white><remaining_safe></white>"
-      - "<gray>Mines:</gray> <white><mines></white>"
+      - "<dark_gray>Current Round"
+      - ""
+      - "<gray>Safe picks: <white><safe_picks></white>"
+      - "<gray>Safe tiles left: <white><remaining_safe></white>"
+      - "<gray>Mines: <#FF5C72><mines></#FF5C72>"
 
   board-info-loss:
     material: COMPASS
-    title: "<#D96B6B>Mine Hit</#D96B6B>"
+    title: "<#FF5C72><bold>MINE HIT</bold></#FF5C72>"
     lore:
       - "<gray>Your board exploded before you could cash out.</gray>"
       - "<gray>Safe picks:</gray> <white><safe_picks></white>"
 
   board-info-cashout:
     material: COMPASS
-    title: "<#53B38C>Paid Out</#53B38C>"
+    title: "<#7DFFA8><bold>PAID OUT</bold></#7DFFA8>"
     lore:
       - "<gray>Safe picks:</gray> <white><safe_picks></white>"
       - "<gray>Final multiplier:</gray> <white><multiplier>x</white>"
 
   bet-info:
     material: GOLD_INGOT
-    title: "<#D5B25C>Bet Info</#D5B25C>"
+    title: "<#FFD166><bold>BET INFO</bold></#FFD166>"
     lore:
-      - "<gray>Wager:</gray> <white><wager></white>"
-      - "<gray>Board size:</gray> <white><board_size> tiles</white>"
-      - "<gray>Player:</gray> <white><player></white>"
+      - "<dark_gray>Current Round"
+      - ""
+      - "<gray>Wager: <#FFD166><wager></#FFD166>"
+      - "<gray>Board size: <white><board_size> tiles</white>"
+      - "<gray>Player: <white><player></white>"
 
   odds-info-active:
     material: CLOCK
-    title: "<#8E88D6>Odds</#8E88D6>"
+    title: "<#BC91FF><bold>LIVE ODDS</bold></#BC91FF>"
     lore:
-      - "<gray>Current multiplier:</gray> <white><multiplier>x</white>"
-      - "<gray>Next safe chance:</gray> <white><chance>%</white>"
-      - "<gray>Cash out anytime to lock in profit.</gray>"
+      - "<dark_gray>Current Round"
+      - ""
+      - "<gray>Multiplier: <white><multiplier>x</white>"
+      - "<gray>Next safe chance: <#7DFFA8><chance>%</#7DFFA8>"
+      - ""
+      - "<yellow>Cash out anytime to secure the payout."
 
   odds-info-loss:
     material: PAPER
-    title: "<#A5AFBC>Payout</#A5AFBC>"
+    title: "<#A5AFBC><bold>PAYOUT</bold></#A5AFBC>"
     lore:
       - "<gray>This round paid:</gray> <white>0</white>"
 
   odds-info-cashout:
     material: PAPER
-    title: "<#A5AFBC>House Edge</#A5AFBC>"
+    title: "<#A5AFBC><bold>FAIR ODDS</bold></#A5AFBC>"
     lore:
       - "<gray>Calculated server-side from safe-pick odds.</gray>"
 
   help:
     material: BOOK
-    title: "<#C7A768>Quick Help</#C7A768>"
+    title: "<#FFB347><bold>QUICK HELP</bold></#FFB347>"
     lore:
-      - "<gray>/mines cashout</gray> <white>to claim your current payout</white>"
-      - "<gray>/mines reopen</gray> <white>to reopen this board</white>"
-      - "<gray>Closing the menu does not forfeit the board.</gray>"
+      - "<dark_gray>Mines Commands"
+      - ""
+      - "<gray><aqua>/mines cashout</aqua> secures your payout."
+      - "<gray><aqua>/mines reopen</aqua> reopens this board."
+      - ""
+      - "<yellow>Closing the menu never forfeits the board."
 
   stats-loading:
     material: NETHER_STAR
-    title: "<#7588A6>Your Stats</#7588A6>"
+    title: "<#75C8FF><bold>YOUR STATS</bold></#75C8FF>"
     lore:
       - "<gray>Loading your profile snapshot...</gray>"
       - "<dark_gray>This button is informational only.</dark_gray>"
 
   stats-loaded:
     material: NETHER_STAR
-    title: "<#7588A6>Your Stats</#7588A6>"
+    title: "<#75C8FF><bold>YOUR STATS</bold></#75C8FF>"
     lore:
-      - "<gray>Games:</gray> <white><games></white> <dark_gray>|</dark_gray> <gray>Wins:</gray> <white><wins></white>"
-      - "<gray>Losses:</gray> <white><losses></white> <dark_gray>|</dark_gray> <gray>Win Rate:</gray> <white><win_rate>%</white>"
-      - "<gray>Total Wagered:</gray> <white><wagered></white>"
-      - "<gray>Total Paid:</gray> <white><paid></white>"
-      - "<gray>Net Profit:</gray> <white><profit></white>"
-      - "<gray>Best Cashout:</gray> <white><best_cashout></white>"
-      - "<gray>Biggest Bet:</gray> <white><biggest_bet></white>"
-      - "<gray>Tiles Cleared:</gray> <white><tiles></white>"
-      - "<dark_gray>This button is informational only.</dark_gray>"
+      - "<dark_gray>Lifetime Profile"
+      - ""
+      - "<gray>Games: <white><games></white> <dark_gray>•</dark_gray> Wins: <white><wins></white>"
+      - "<gray>Losses: <white><losses></white> <dark_gray>•</dark_gray> Win rate: <white><win_rate>%</white>"
+      - ""
+      - "<gray>Total wagered: <white><wagered></white>"
+      - "<gray>Total paid: <white><paid></white>"
+      - "<gray>Net profit: <#7DFFA8><profit></#7DFFA8>"
+      - "<gray>Best cashout: <white><best_cashout></white>"
+      - "<gray>Biggest bet: <white><biggest_bet></white>"
+      - "<gray>Tiles cleared: <white><tiles></white>"
 
 leaderboard:
-  title: "<dark_gray>Mines | Leaderboard</dark_gray>"
+  title: "<dark_gray>Mines <gray>| <white>Leaderboard"
 
   layout:
+    # Entry slots control both page size and placement.
     inventory-size: 54
     entry-slots:
       - 10
@@ -271,37 +344,42 @@ leaderboard:
 
     summary:
       material: COMPARATOR
-      title: "<#F4C95D><bold>Mines Leaders</bold></#F4C95D>"
+      title: "<#FFD166><bold>MINES LEADERS</bold></#FFD166>"
       lore:
-        - "<gray>Sorting by:</gray> <white><stat></white>"
-        - "<gray>Tracked players:</gray> <white><players></white>"
-        - "<gray>Showing ranks:</gray> <white><from_rank></white> <dark_gray>-</dark_gray> <white><to_rank></white>"
+        - "<dark_gray>Global Rankings"
+        - ""
+        - "<gray>Sorting by: <white><stat></white>"
+        - "<gray>Tracked players: <white><players></white>"
+        - "<gray>Showing ranks: <white><from_rank></white> <dark_gray>—</dark_gray> <white><to_rank></white>"
 
     filter:
       material: HOPPER
-      title: "<#7BAAF7>Stat Filter</#7BAAF7>"
+      title: "<#75C8FF><bold>STAT FILTER</bold></#75C8FF>"
       lore:
-        - "<gray>Current stat:</gray> <white><stat></white>"
-        - "<gray>Next stat:</gray> <white><next_stat></white>"
-        - "<dark_gray>Click to cycle the leaderboard sort.</dark_gray>"
+        - "<dark_gray>Leaderboard Sorting"
+        - ""
+        - "<gray>Current: <white><stat></white>"
+        - "<gray>Next: <#7DFFA8><next_stat></#7DFFA8>"
+        - ""
+        - "<gold>▶ <yellow><bold><underlined>CLICK</underlined></bold> <yellow>To Cycle"
 
     loading:
       material: CLOCK
-      title: "<#7BAAF7>Loading Leaders</#7BAAF7>"
+      title: "<#75C8FF><bold>LOADING LEADERS</bold></#75C8FF>"
       lore:
         - "<gray>Fetching the <white><stat></white> rankings...</gray>"
         - "<dark_gray>Stats are sorted asynchronously.</dark_gray>"
 
     empty:
       material: PAPER
-      title: "<#D5B25C>No Ranked Players Yet</#D5B25C>"
+      title: "<#FFB347><bold>NO RANKED PLAYERS</bold></#FFB347>"
       lore:
         - "<gray>No completed rounds are recorded for</gray>"
         - "<white><stat></white><gray>.</gray>"
 
     entry:
       material: PLAYER_HEAD
-      title: "<#F5F7FA>#<rank> <player></#F5F7FA>"
+      title: "<white><bold>#<rank> <player></bold></white>"
       lore:
         - "<gray>Selected stat:</gray> <white><stat></white>"
         - "<gray>Value:</gray> <white><value></white>"
@@ -313,31 +391,45 @@ leaderboard:
 
     focused-entry:
       material: PLAYER_HEAD
-      title: "<#F5F7FA>#<rank> <player></#F5F7FA>"
+      title: "<white><bold>#<rank> <player></bold></white>"
       lore:
-        - "<gray><stat>:</gray> <white><value></white>"
+        - "<dark_gray>Ranked Player"
+        - ""
+        - "<gray><stat>: <#7DFFA8><value></#7DFFA8>"
         - "<dark_gray>Sorted by the active hopper filter.</dark_gray>"
 
     previous-page:
       material: ARROW
-      title: "<#A5AFBC>Previous Page</#A5AFBC>"
+      title: "<#75C8FF><bold>PREVIOUS PAGE</bold></#75C8FF>"
       lore:
-        - "<gray>Current page:</gray> <white><page></white> <dark_gray>/</dark_gray> <white><pages></white>"
+        - "<dark_gray>Navigation"
+        - ""
+        - "<gray>Page: <white><page></white> <dark_gray>/</dark_gray> <white><pages></white>"
+        - ""
+        - "<gold>▶ <yellow><bold><underlined>CLICK</underlined></bold> <yellow>To Go Back"
 
     next-page:
       material: ARROW
-      title: "<#A5AFBC>Next Page</#A5AFBC>"
+      title: "<#FFB347><bold>NEXT PAGE</bold></#FFB347>"
       lore:
-        - "<gray>Current page:</gray> <white><page></white> <dark_gray>/</dark_gray> <white><pages></white>"
+        - "<dark_gray>Navigation"
+        - ""
+        - "<gray>Page: <white><page></white> <dark_gray>/</dark_gray> <white><pages></white>"
+        - ""
+        - "<gold>▶ <yellow><bold><underlined>CLICK</underlined></bold> <yellow>To Continue"
 
     page-info:
       material: BOOK
-      title: "<#7C92B8>Page <page>/<pages></#7C92B8>"
+      title: "<#BC91FF><bold>PAGE <page>/<pages></bold></#BC91FF>"
       lore:
-        - "<gray>Total ranked players:</gray> <white><entries></white>"
+        - "<dark_gray>Leaderboard Overview"
+        - ""
+        - "<gray>Total ranked players: <white><entries></white>"
 
     close:
       material: BARRIER
-      title: "<#D96B6B>Close</#D96B6B>"
+      title: "<#FF5C72><bold>CLOSE</bold></#FF5C72>"
       lore:
-        - "<gray>Close the leaderboard menu.</gray>"
+        - "<dark_gray>Navigation"
+        - ""
+        - "<gold>▶ <yellow><bold><underlined>CLICK</underlined></bold> <yellow>To Close"

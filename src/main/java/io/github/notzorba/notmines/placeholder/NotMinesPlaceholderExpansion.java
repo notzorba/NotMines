@@ -16,7 +16,7 @@ public final class NotMinesPlaceholderExpansion extends PlaceholderExpansion {
 
     @Override
     public String getIdentifier() {
-        return "notmines";
+        return "nmines";
     }
 
     @Override

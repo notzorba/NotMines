@@ -20,7 +20,10 @@ public final class MessageService {
         this.miniMessage = MiniMessage.miniMessage();
         this.messagesConfig = messagesConfig;
         this.prefix = this.miniMessage.deserialize(
-            messagesConfig.getString("prefix", "<#F97352><bold>Mines</bold></#F97352> <dark_gray>▶</dark_gray>")
+            messagesConfig.getString(
+                "prefix",
+                "<#75C8FF><bold>MINES</bold></#75C8FF> <gray>▶</gray> <reset>"
+            )
         );
     }
 
